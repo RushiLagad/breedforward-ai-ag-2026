@@ -1,22 +1,26 @@
-# Publish to GitHub
+# GitHub collaboration
 
-Keep the repository private until the team confirms the event's data and intellectual-property rules.
+This repository is public so teammates can view it, fork it, and submit pull requests. Public visibility does not grant direct push access to the main repository.
 
-## GitHub CLI
-
-From the repository directory:
+## Fork and contribute
 
 ```bash
-git init -b main
+gh repo fork RushiLagad/breedforward-ai-ag-2026 --clone
+cd breedforward-ai-ag-2026
+git checkout -b <short-feature-name>
+# Make and test changes
 git add .
-git commit -m "Set up BreedForward hackathon workspace"
-gh repo create breedforward-ai-ag-2026 --private --source=. --remote=origin --push
+git commit -m "<describe the change>"
+git push -u origin <short-feature-name>
+gh pr create
 ```
+
+A maintainer can review and merge the pull request. Team members who need direct branch access should send the owner their exact GitHub usernames for individual collaborator invitations.
 
 ## Recommended GitHub settings
 
-- Invite only the four confirmed team members initially.
 - Protect `main` if the rapid workflow permits it.
 - Enable Issues and use the included task template.
 - Require secret scanning and block pushes containing secrets when those controls are available.
-- Do not enable GitHub Pages or make the repository public until redistribution rights are clear.
+- Never commit organizer- or sponsor-provided data unless redistribution is explicitly permitted.
+- Keep raw challenge data, credentials, and personal information out of Git.
