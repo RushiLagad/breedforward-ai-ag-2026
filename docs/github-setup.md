@@ -15,7 +15,7 @@ gh repo create breedforward-ai-ag-2026 --private --source=. --remote=origin --pu
 
 ## Recommended GitHub settings
 
-- Invite only the six team members initially.
+- Invite only the four confirmed team members initially.
 - Protect `main` if the rapid workflow permits it.
 - Enable Issues and use the included task template.
 - Require secret scanning and block pushes containing secrets when those controls are available.
