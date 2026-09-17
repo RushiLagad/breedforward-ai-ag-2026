@@ -10,8 +10,6 @@ Complete this together during the first check-in. Keep private contact details o
 | Renuka Khanal | TBD | TBD | TBD | TBD |
 | Sambhavi Patel | TBD | TBD | TBD | TBD |
 | Rushikesh Lagad | TBD | Bioinformatics, genomics, ML | TBD | TBD |
-| Elias Zakaria Mohellebi | TBD | TBD | TBD | TBD |
-| Soni Pinjala | TBD | TBD | TBD | TBD |
 
 ## Suggested rotating roles
 
