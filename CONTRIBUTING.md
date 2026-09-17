@@ -1,5 +1,10 @@
 # Contributing
 
+## Public contribution workflow
+
+Fork the repository, create a focused branch, push the branch to your fork, and open a pull request. Public visibility allows access and forking but does not grant direct push permission to the main repository.
+
+
 ## Branches
 
 Use short, descriptive names such as `eda`, `feature-weather`, `baseline-rf`, or `pitch-figures`.
