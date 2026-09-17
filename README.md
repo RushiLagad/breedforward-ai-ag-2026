@@ -20,8 +20,6 @@ See [docs/branding.md](docs/branding.md) for the current logo files and usage no
 - Renuka Khanal
 - Sambhavi Patel
 - Rushikesh Lagad
-- Elias Zakaria Mohellebi
-- Soni Pinjala
 
 Skills, roles, and contact preferences can be added in [TEAM.md](TEAM.md).
 
