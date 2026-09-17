@@ -33,7 +33,7 @@ Skills, roles, and contact preferences can be added in [TEAM.md](TEAM.md).
 ## Quick start
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/RushiLagad/breedforward-ai-ag-2026.git
 cd breedforward-ai-ag-2026
 python -m venv .venv
 source .venv/bin/activate
@@ -66,13 +66,13 @@ On Windows PowerShell, activate the environment with:
 | `assets/` | Logo files, approved figures, diagrams, and presentation assets |
 | `docs/` | Challenge brief, branding, decisions, and pitch plan |
 
-See [docs/github-setup.md](docs/github-setup.md) for safe publication steps.
+See [docs/github-setup.md](docs/github-setup.md) for the public contribution workflow.
 
 ## Data and IP guardrails
 
 - Keep organizer- or sponsor-provided data private unless the rules explicitly permit redistribution.
 - Do not commit credentials, tokens, personal data, or large raw datasets.
 - Record the source and license for every external dataset.
-- Confirm event and sponsor IP terms before adding an open-source license or making the repository public.
+- This repository is public for collaboration; never commit restricted challenge data or sponsor materials.\n- Confirm event and sponsor IP terms before adding an open-source license.
 
 No software license is included yet for that reason.
