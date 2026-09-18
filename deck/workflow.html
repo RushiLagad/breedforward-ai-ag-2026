@@ -1,0 +1,169 @@
+<title>BreedForward Workflow</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@110,600;110,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F3F4F0;--panel:#FFFFFF;--ink:#1B2320;--muted:#5F6A63;--rule:#D7DBD2;
+  --leaf:#2F7D4B;--leaf-soft:#DCEFE2;--husk:#B8891F;--husk-soft:#F6EBCF;--fail:#B2432F;--fail-soft:#F6DFDA;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --disp:"Archivo","IBM Plex Sans",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141816;--panel:#1C2220;--ink:#E7EAE3;--muted:#9AA69E;--rule:#2E3733;
+  --leaf:#5FBF7E;--leaf-soft:#1E3327;--husk:#D9B04A;--husk-soft:#3A2F14;--fail:#E07A66;--fail-soft:#3D221D;}}
+:root[data-theme="dark"]{
+  --bg:#141816;--panel:#1C2220;--ink:#E7EAE3;--muted:#9AA69E;--rule:#2E3733;
+  --leaf:#5FBF7E;--leaf-soft:#1E3327;--husk:#D9B04A;--husk-soft:#3A2F14;--fail:#E07A66;--fail-soft:#3D221D;}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;padding-inline:clamp(16px,4vw,48px);padding-block:32px 64px;margin:0}
+.wrap{max-width:1080px;margin:0 auto}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--disp);font-weight:700;font-size:clamp(28px,4vw,40px);line-height:1.1;margin:6px 0 10px;text-wrap:balance}
+h2{font-family:var(--disp);font-weight:600;font-size:20px;margin:0 0 10px;text-wrap:balance}
+h3{font-size:15px;font-weight:600;margin:0 0 6px}
+p{margin:0 0 10px;max-width:68ch}
+.lead{font-size:17px;max-width:72ch;color:var(--ink)}
+.hyp{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin:22px 0 28px}
+.hyp .card{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:16px 18px}
+.card .tag{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:3px;display:inline-block;margin-bottom:8px}
+.tag.leaf{background:var(--leaf-soft);color:var(--leaf)}.tag.husk{background:var(--husk-soft);color:var(--husk)}.tag.fail{background:var(--fail-soft);color:var(--fail)}
+.diagram{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px;overflow-x:auto;margin:0 0 28px}
+.diagram pre.mermaid{margin:0;min-width:720px}
+section{margin:0 0 30px}
+.phase{display:grid;grid-template-columns:150px 1fr;gap:0 18px;border-top:1px solid var(--rule);padding:16px 0}
+.phase .num{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.06em}
+.phase .num b{display:block;font-family:var(--disp);font-size:18px;color:var(--ink);letter-spacing:0;margin-top:2px}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0 4px}
+th,td{text-align:left;vertical-align:top;padding:7px 10px;border-bottom:1px solid var(--rule)}
+th{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500}
+td.k{font-family:var(--mono);font-size:13px;white-space:nowrap;color:var(--muted)}
+.num-val{font-variant-numeric:tabular-nums}
+code{font-family:var(--mono);font-size:13px;background:var(--leaf-soft);color:var(--ink);padding:1px 5px;border-radius:3px}
+.gate{font-family:var(--mono);font-size:13px;color:var(--husk);margin-top:6px}
+.tblwrap{overflow-x:auto}
+ul{margin:4px 0 8px;padding-left:20px}li{margin:2px 0}
+@media (max-width:640px){.phase{grid-template-columns:1fr;gap:6px}}
+</style>
+
+<div class="wrap">
+<div class="eyebrow">BreedForward · AI in Ag Hackathon 2026 · Bayer legacy maize dataset</div>
+<h1>From testcross plots to a cross recommendation</h1>
+<p class="lead">One question drives every step: which C1 and C2 inbreds should a breeder advance, and which pairs should be crossed, given 1.02 million testcross plots, 1,185 environments and 2,911 SNPs. Every phase below has an input, a method with a citation, an output file and a gate.</p>
+
+<div class="hyp">
+  <div class="card"><span class="tag leaf">Primary hypothesis</span>
+    <h3>Testcross GCA plus a within-population marker model ranks untested lines well enough to skip a preliminary yield trial.</h3>
+    <p>Falsifier: CV1 accuracy for yield below 0.3 in most populations. Literature on this data reports 0.41 to 0.59 (Lian et al. 2014).</p></div>
+  <div class="card"><span class="tag fail">Tested and rejected</span>
+    <h3>Lines re-rank across dry, moderate and wet environments.</h3>
+    <p>Between-regime correlation of line effects (0.23) equals the within-regime split-half reliability (0.18 to 0.25). Regime explains 1% of environment mean yield. The reranking is noise, and that is a result, not a failure.</p></div>
+  <div class="card"><span class="tag husk">Decision claim</span>
+    <h3>A five-criteria score on the organizers' own commercialization rules changes the shortlist versus yield alone.</h3>
+    <p>Yield vs check, standability (RTLP, STLP), maturity (ERM), moisture (MST), stability. Weights are the breeder's choice and the demo exposes them.</p></div>
+</div>
+
+<h2>Workflow</h2>
+<div class="diagram"><pre class="mermaid">
+flowchart TD
+  subgraph P1[1 · Build and audit]
+    A1[C1 + C2 phenotypes<br/>1.07M plots] --> A3[Clean table<br/>LINE_ID · TESTER · ENV]
+    A2[environmental_features<br/>1,185 env × 84 covariates] --> A3
+    A3 --> A4{Audit gate<br/>IDs unique · nesting · coverage}
+  end
+  subgraph P2[2 · Environment]
+    A4 --> B1[Flowering-window stress<br/>Jul–Aug precip, CLDD]
+    A4 --> B2[Env PCA fingerprint<br/>5 PCs, 63% variance]
+    B1 --> B3[Regimes on unique envs<br/>HotDry · Moderate · CoolWet]
+  end
+  subgraph P3[3 · Genetics]
+    A4 --> C1[Mixed model per year<br/>env + tester fixed, line random]
+    C1 --> C2[Line GCA BLUPs<br/>h² ≈ 0.48 at 7 plots]
+    C1 --> C3[Parent GCA<br/>260 + 258 parents, multi-year]
+    B3 --> C4[G×E test<br/>between vs split-half r]
+    C2 --> C4
+  end
+  subgraph P4[4 · Marker model]
+    D1[Imputed SNPs<br/>2,911 panel, ~1,000 polymorphic] --> D2[Ridge / GBLUP<br/>per population]
+    C2 --> D2
+    D2 --> D3[CV1 within pop<br/>CV0 by year]
+  end
+  subgraph P5[5 · Decision]
+    C2 --> E1[Five-criteria score<br/>weights exposed]
+    D3 --> E1
+    E1 --> E2[Shortlist C1 · C2<br/>top 25 each]
+    C3 --> E3[Cross proposals<br/>GCA_A + GCA_B]
+    E2 --> E3
+    E3 --> E4[Streamlit demo<br/>reads results.csv only]
+  end
+  C4 -. rejected .-> E1
+</pre></div>
+
+<section>
+<div class="phase"><div class="num">PHASE 1<b>Build and audit</b></div><div>
+<div class="tblwrap"><table>
+<tr><th>Input</th><th>Method</th><th>Output</th></tr>
+<tr><td>Two phenotype CSVs, environment CSV</td><td><code>build.py</code>: IDs as strings, <code>LINE_UNIQUE_ID</code> as key, tester cleaned, inner merge with <code>validate="many_to_one"</code></td><td><code>pheno_env_ready.pkl</code>, 1,019,864 rows, 154,551 lines, 998 populations</td></tr>
+<tr><td>Same table</td><td><code>audit.py</code>: uniqueness, nesting, coverage matrix, leakage list, variance split</td><td>Traps list for slide 3: 52k C2 rows lack an environment; every line sits in one year; MST is measured with yield</td></tr>
+</table></div>
+<div class="gate">Gate · Sat 13:00 · the table exists and the traps list is written</div></div></div>
+
+<div class="phase"><div class="num">PHASE 2<b>Environment</b></div><div>
+<p>Whole-season precipitation tertiles are the naive baseline. We keep them only to show they disagree with a flowering-window definition 51% of the time. Regimes are cut on the 1,185 unique environments, never on plot rows.</p>
+<div class="tblwrap"><table>
+<tr><th>Covariate</th><th>Why</th><th>Source</th></tr>
+<tr><td class="k">PRCP_JA, CLDD_JA</td><td>Water and heat during silking and grain fill drive US maize yield</td><td>Westhues et al. 2021</td></tr>
+<tr><td class="k">STRESS_IDX</td><td>z(precip) − z(heat), continuous, no arbitrary cut</td><td>Couëdel et al. 2021 for the stress-class logic</td></tr>
+<tr><td class="k">ENV_PC1..5</td><td>Fingerprint of all 84 covariates for the environment map</td><td>Rogers &amp; Holland 2022</td></tr>
+</table></div>
+<div class="gate">Gate · Sat 15:00 · regime table and environment map figure exist</div></div></div>
+
+<div class="phase"><div class="num">PHASE 3<b>Genetics and the G×E test</b></div><div>
+<p>Yield is centered within environment × population, which removes location, year, tester and population effects at once. Line effects are shrunk by cell size before any ranking; a raw mean on n = 1 never enters a table.</p>
+<div class="tblwrap"><table>
+<tr><th>Quantity</th><th>Value</th><th>Reads as</th></tr>
+<tr><td>Line-mean heritability, 7 plots</td><td class="num-val">0.48</td><td>GCA ranking of lines is meaningful</td></tr>
+<tr><td>Between-regime r (lines, n ≥ 2)</td><td class="num-val">0.23</td><td rowspan="2">Equal, so no detectable re-ranking</td></tr>
+<tr><td>Within-regime split-half r</td><td class="num-val">0.18 – 0.25</td></tr>
+<tr><td>Parents, ≥ 30 envs: between vs within</td><td class="num-val">0.50 vs 0.45 – 0.64</td><td>Same conclusion at the parent level</td></tr>
+<tr><td>Regime share of env mean yield</td><td class="num-val">1%</td><td>These are managed Corn Belt sites, not a stress gradient</td></tr>
+</table></div>
+<div class="gate">Gate · Sat 16:00 · hypothesis checkpoint, the reversal figure is chosen</div></div></div>
+
+<div class="phase"><div class="num">PHASE 4<b>Marker model</b></div><div>
+<p>Per population: ridge on the polymorphic SNPs (about 1,000 of 2,911), target = centered line mean, 5-fold CV1. A quick pass on 24 populations gave r = 0.21 for yield and 0.35 to 0.39 for moisture. Proper GBLUP with pedigree connection through the 518 shared parents is the upgrade if time allows. Report CV0 by year alongside, and say which scheme each number came from.</p>
+<div class="gate">Gate · Sat 23:00 · scope freeze, accuracy table for the deck exists</div></div></div>
+
+<div class="phase"><div class="num">PHASE 5<b>Decision layer</b></div><div>
+<ul>
+<li>Score = weighted sum of standardized GCA for yield, TWT, ERM, MST, RTLP + STLP, minus a penalty on across-location spread. Default weights match the organizers' course slide 51; a sensitivity table shows how the top 25 moves.</li>
+<li>Shortlist per heterotic group, then crosses ranked by GCA_A + GCA_B (slide 15 of their deck). SCA is not estimable from testcrosses and the slide says so.</li>
+<li>The business number: a line predicted from markers instead of a preliminary yield trial saves a stage; their course prices that at roughly $500K and one year per program.</li>
+</ul>
+<div class="gate">Gate · Sun 11:00 · shortlist, cross table and deck complete</div></div></div>
+</section>
+
+<h2>Inference demo</h2>
+<p>The Streamlit app never fits a model on stage. It reads <code>results.csv</code> and <code>gp_within_pop.csv</code> and answers three questions a breeder would ask.</p>
+<div class="diagram"><pre class="mermaid">
+sequenceDiagram
+  participant B as Breeder
+  participant D as Dashboard
+  participant R as results.csv
+  B->>D: pick population C1.42
+  D->>R: lines, GCA, five criteria, CV1 r
+  D-->>B: 180 lines ranked, 30 untested lines with predicted GCA ± SE
+  B->>D: move weight sliders
+  D-->>B: shortlist re-sorts, sensitivity note
+  B->>D: toggle regime HotDry / CoolWet
+  D-->>B: rank order barely moves, r = 0.23 shown
+  B->>D: open cross planner
+  D-->>B: top C1 × C2 pairs by GCA_A + GCA_B
+</pre></div>
+
+<div class="tblwrap"><table>
+<tr><th>Tab</th><th>Shows</th><th>The point it makes</th></tr>
+<tr><td>Advance</td><td>Lines in a population, phenotyped and predicted, with SE and n</td><td>Markers rank the untested lines; the breeder sees the confidence</td></tr>
+<tr><td>Score</td><td>Five sliders, top 25, overlap with yield-only top 25</td><td>Weights are a choice, and the choice changes the answer</td></tr>
+<tr><td>Regimes</td><td>Line profile across HotDry / Moderate / CoolWet</td><td>The honest slide: no re-ranking to sell</td></tr>
+<tr><td>Cross</td><td>Parent GCA per group, ranked pairings</td><td>The Monday-morning output</td></tr>
+</table></div>
+</div>

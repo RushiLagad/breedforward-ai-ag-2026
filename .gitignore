@@ -1,0 +1,29 @@
+# Hackathon data is confidential. Nothing from the dataset gets committed.
+data/
+*.csv
+*.tsv
+*.parquet
+*.xlsx
+*.zip
+*.Rdata
+!data/.gitkeep
+
+# Results and figures are regenerated, not versioned
+results/
+figures/*.png
+figures/*.pdf
+!figures/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+venv/
+.venv/
+.env
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
