@@ -34,6 +34,7 @@ src/audit.py          structure audit for an unknown dataset   <- run this first
 src/build.py          clean build of both groups + environment -> results/pheno_env_ready.pkl
 src/gxe_test.py       between-regime vs split-half correlation (the honest G x E test)
 src/gp_within_pop.py  within-population genomic prediction, CV1  -> results/gp_within_pop.csv
+src/predict2008.py    THE SCENARIO: train 2000-2007, predict 2008  -> results/pred2008.csv
 src/rank.py           shrunken estimates + decision score      -> results/results.csv
 src/figures.py        the deck figures                         -> figures/*.png
 src/style.py          one visual system for every plot
@@ -50,13 +51,41 @@ of the merge and QC pattern.
 ## Pipeline
 
 ```
-unzip the dataset into data/   (folder name: "Simplified Hackathon Dataset V3", genotype zips unzipped beside it)
+copy the dataset files into data/ and unzip ImputedC1Populations.zip and ImputedC2Populations.zip there
 python src/build.py            # ~2 min, writes results/pheno_env_ready.pkl and results/env_ready.csv
 python src/gxe_test.py         # ~3 min
 python src/gp_within_pop.py    # ~20 min for 50 populations
+python src/predict2008.py      # ~7 min, needs ~4 GB RAM; the scenario result
 python src/figures.py results/results.csv
 streamlit run dashboard/app.py
 ```
+
+## The scenario (from "Hackathon Scenario And Help.docx")
+
+January 2008, plots cut. Predict 2008 performance of known, genotyped lines (crossed to testers,
+about to be planted at known locations) from 2001-2007 data, and decide which lines advance.
+Choose broad-acre (average across environments) or environment-specific prediction and justify it.
+Focus on GCA; SCA is out of scope by the organizers' own statement.
+
+## 2008 hold-out result (Sep 18, src/predict2008.py)
+
+Train 2000-2007 (138k lines), predict all 15,959 lines tested in 2008, score against their real 2008 yields.
+
+| Predictor | r with 2008 line means | Gain if top 20% advance |
+|---|---|---|
+| Population mean from earlier years | ~0 (most 2008 pops are new) | +0.04 bu/ac |
+| Parent GCA from earlier years | 0.11 | +1.30 bu/ac |
+| Markers, ridge on 2,911 SNPs | 0.14 | +1.48 bu/ac |
+| Markers + parent GCA | **0.15** | **+1.76 bu/ac** |
+| Perfect foresight | | +12.69 bu/ac |
+
+2008 line means have reliability 0.46 (4.8 plots/line), so the ceiling is r ~ 0.68 and accuracy vs
+true genetic value is ~0.22. This is CV00 (new lines, new year, 71% of populations with no parent
+seen before); literature reports near zero for this scheme. Broad-acre is the right target because
+lines do not re-rank across environments (see G x E test below).
+
+Two traps found here: the C2 phenotype file stores LINE as `12.0` and LINE_UNIQUE_ID as `C2.1.12.0`,
+so strip the `.0` before matching genotypes; and 3.9% of rows have no tester ID.
 
 ## What we already know (Sep 18 runs)
 

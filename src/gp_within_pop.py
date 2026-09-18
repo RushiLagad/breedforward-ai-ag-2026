@@ -20,7 +20,9 @@ N_POPS = int(sys.argv[1]) if len(sys.argv) > 1 else 50
 y = pd.read_pickle("results/pheno_env_ready.pkl").dropna(subset=["YLD"]).copy()
 y["yc"] = y["YLD"] - y.groupby(["ENV", "POP"])["YLD"].transform("mean")
 blue = y.groupby(["POP", "LINE_ID", "LINE"]).agg(yc=("yc", "mean"), mst=("MST", "mean"), n=("yc", "size")).reset_index()
-blue["key"] = [s.lstrip("0") or "0" for s in blue["LINE"]]
+# C2 file stores LINE as "12.0": strip the float suffix, then leading zeros
+blue["key"] = [s[:-2] if s.endswith(".0") else s for s in blue["LINE"]]
+blue["key"] = [s.lstrip("0") or "0" for s in blue["key"]]
 
 rng = np.random.default_rng(0)
 pops = sorted(blue["POP"].unique())

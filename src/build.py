@@ -4,7 +4,7 @@ import numpy as np, pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
-DATA = "data/Simplified Hackathon Dataset V3"
+DATA = "data"
 C1 = f"{DATA}/C1_Phenotype_Data_V2.csv"
 C2 = f"{DATA}/C2_Phenotype_Data_V2.csv"
 ENV = f"{DATA}/environmental_features.csv"
