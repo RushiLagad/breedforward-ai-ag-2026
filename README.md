@@ -35,6 +35,8 @@ src/build.py          clean build of both groups + environment -> results/pheno_
 src/gxe_test.py       between-regime vs split-half correlation (the honest G x E test)
 src/gp_within_pop.py  within-population genomic prediction, CV1  -> results/gp_within_pop.csv
 src/predict2008.py    THE SCENARIO: train 2000-2007, predict 2008  -> results/pred2008.csv
+src/predict_multitrait.py  tuned ridge, 2007 + 2008 hold-outs, six traits -> results_summary/stage2_results.csv
+deck/workflow.png     the team schematic (deck/workflow.dot is the source)
 src/rank.py           shrunken estimates + decision score      -> results/results.csv
 src/figures.py        the deck figures                         -> figures/*.png
 src/style.py          one visual system for every plot
@@ -86,6 +88,17 @@ lines do not re-rank across environments (see G x E test below).
 
 Two traps found here: the C2 phenotype file stores LINE as `12.0` and LINE_UNIQUE_ID as `C2.1.12.0`,
 so strip the `.0` before matching genotypes; and 3.9% of rows have no tester ID.
+
+## Stage 2: tuned model, two validation years, six traits (src/predict_multitrait.py)
+
+| Hold-out year | r markers, yield | top-20% gain | ceiling r | pops with both parents seen before |
+|---|---|---|---|---|
+| 2007 (train 2000-2006) | 0.07 | +0.5 of +12.5 bu/ac | 0.63 | 15% |
+| 2008 (train 2000-2007) | 0.14 | +1.9 of +12.7 bu/ac | 0.68 | 29% |
+
+Accuracy for a new year is set by how connected the new populations are to the past, not by the model.
+Traits (2008, markers): TWT 0.23, MST 0.18, YLD 0.14, ERM 0.14, STLP 0.05, RTLP ~0. Lodging is not
+predictable here; carry it as an observed penalty, not a prediction. Heavy shrinkage (h2 ~ 0.1) won tuning.
 
 ## What we already know (Sep 18 runs)
 

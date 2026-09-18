@@ -1,0 +1,52 @@
+digraph BreedForward {
+  graph [rankdir=TB, fontname="Helvetica", fontsize=13, bgcolor="white", pad=0.4, nodesep=0.35, ranksep=0.55, splines=ortho];
+  node  [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=12, color="#9AA69E", fillcolor="white", penwidth=1.2, margin="0.18,0.10"];
+  edge  [color="#5F6A63", penwidth=1.3, arrowsize=0.8];
+
+  Q [label="THE QUESTION (Bayer scenario)\nJanuary 2008, field plots cut.\nWhich of the 15,959 lines about to be planted should advance?", shape=box, style="filled", fillcolor="#1B2320", fontcolor="white", fontsize=13, penwidth=0];
+  H [label="HYPOTHESIS\nGenotypes + 2001-2007 testcross data predict 2008 line performance\nwell enough to advance the right 20% without growing them all.", fillcolor="#DCEFE2", color="#2F7D4B"];
+
+  subgraph cluster_data {
+    label="1 · DATA  (Fri night)"; fontname="Helvetica-Bold"; fontsize=12; color="#D7DBD2"; style="rounded"; bgcolor="#F3F4F0";
+    D1 [label="Phenotypes C1 + C2\n1.07M testcross plots, 2000-2008"];
+    D2 [label="Environment\n1,185 year x location, 84 covariates"];
+    D3 [label="Genotypes\n999 populations, one 2,911-SNP panel"];
+    B  [label="Clean table\nLINE_UNIQUE_ID · tester · env · traps list", fillcolor="#FFFFFF"];
+    D1 -> B; D2 -> B; D3 -> B;
+  }
+
+  subgraph cluster_model {
+    label="2 · MODEL  (Sat)"; fontname="Helvetica-Bold"; fontsize=12; color="#D7DBD2"; style="rounded"; bgcolor="#F3F4F0";
+    A  [label="Adjust yield for environment x tester\n→ one GCA value per line"];
+    M1 [label="Baselines\npopulation mean · parent GCA"];
+    M2 [label="Genomic prediction\nridge / GBLUP on 2,911 SNPs\ntrain 2000-2007"];
+    V  [label="Validate on the real 2008 season\nr, top-20% genetic gain, vs baselines", fillcolor="#F6EBCF", color="#B8891F"];
+    A -> M1; A -> M2; M1 -> V; M2 -> V;
+  }
+
+  subgraph cluster_gxe {
+    label="3 · BROAD vs SPECIFIC  (Sat)"; fontname="Helvetica-Bold"; fontsize=12; color="#D7DBD2"; style="rounded"; bgcolor="#F3F4F0";
+    G1 [label="Environment regimes\nflowering-window heat + water"];
+    G2 [label="Do lines re-rank across regimes?\nbetween-regime r vs within-regime reliability"];
+    G3 [label="Answer: no (0.23 vs 0.18-0.25)\n→ predict broad-acre, save the plots", fillcolor="#F6DFDA", color="#B2432F"];
+    G1 -> G2 -> G3;
+  }
+
+  subgraph cluster_decide {
+    label="4 · DECISION + DEMO  (Sun)"; fontname="Helvetica-Bold"; fontsize=12; color="#D7DBD2"; style="rounded"; bgcolor="#F3F4F0";
+    R1 [label="Ranked advancement list\nyield · moisture · test weight · standability · maturity"];
+    R2 [label="Resource math\nplots saved x accuracy = expected gain"];
+    R3 [label="Streamlit demo\npick a population, see predicted vs observed 2008", fillcolor="#DCEFE2", color="#2F7D4B"];
+    R1 -> R3; R2 -> R3;
+  }
+
+  Q -> H;
+  H -> D1 [style=invis]; H -> D2 [style=invis]; H -> D3 [style=invis];
+  B -> A;
+  B -> G1;
+  V -> R1; V -> R2;
+  G3 -> R1;
+
+  OUT [label="DELIVERABLES\n10 slides · live demo · GitHub repo · one honest number", shape=box, style="filled", fillcolor="#2F7D4B", fontcolor="white", penwidth=0];
+  R3 -> OUT;
+}

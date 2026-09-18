@@ -7,6 +7,8 @@ data/
 *.zip
 *.Rdata
 !data/.gitkeep
+# small result summaries are versioned; raw results/ are not
+!results_summary/*.csv
 
 # Results and figures are regenerated, not versioned
 results/
