@@ -5,6 +5,10 @@ Renuka Khanal, Ajaydeep Bedi.
 
 > Grounded in data. Breeding for the future.
 
+![BreedForward workflow](deck/workflow.png)
+
+*Bayer scenario: January 2008, plots cut. Predict which of the 15,959 lines about to be planted should advance, from genotypes and 2001 to 2007 testcross data. Validate on the real 2008 season. Data Friday, model Saturday, decision and demo Sunday.*
+
 **Nothing from the hackathon dataset gets committed.** `data/` is gitignored and so are
 `*.csv`, `*.parquet` and `*.xlsx`. The organizers marked last year's materials confidential.
 
@@ -36,6 +40,8 @@ src/gxe_test.py       between-regime vs split-half correlation (the honest G x E
 src/gp_within_pop.py  within-population genomic prediction, CV1  -> results/gp_within_pop.csv
 src/predict2008.py    THE SCENARIO: train 2000-2007, predict 2008  -> results/pred2008.csv
 src/predict_multitrait.py  tuned ridge, 2007 + 2008 hold-outs, six traits -> results_summary/stage2_results.csv
+src/predict_siblings.py    half of each 2008 pop phenotyped, predict the rest; breeder's equation; advancement list
+src/predict_two_stage.py   sibling mean + within-population marker model (Mendelian sampling term)
 deck/workflow.png     the team schematic (deck/workflow.dot is the source)
 src/rank.py           shrunken estimates + decision score      -> results/results.csv
 src/figures.py        the deck figures                         -> figures/*.png
@@ -99,6 +105,28 @@ so strip the `.0` before matching genotypes; and 3.9% of rows have no tester ID.
 Accuracy for a new year is set by how connected the new populations are to the past, not by the model.
 Traits (2008, markers): TWT 0.23, MST 0.18, YLD 0.14, ERM 0.14, STLP 0.05, RTLP ~0. Lodging is not
 predictable here; carry it as an observed penalty, not a prediction. Heavy shrinkage (h2 ~ 0.1) won tuning.
+
+## Stage 3: the plots you have beat the markers (src/predict_siblings.py, src/predict_two_stage.py)
+
+Scenario says "phenotypes of some related lines" are available. Simulated: half of each 2008 population
+phenotyped, predict the other half. Yield, top-20% advancement, gain possible +12.6 bu/ac:
+
+| What you know about a 2008 line | r | gain captured |
+|---|---|---|
+| genotype only (pure new year) | 0.13 | +1.7 |
+| genotype, siblings pooled into training | 0.24 | +3.0 |
+| mean of phenotyped siblings, no markers | **0.36** | **+4.7** |
+| sibling mean + within-pop marker model | 0.35 | +4.3 |
+
+Markers add on top of the sibling mean for MST (0.58 -> 0.62) and TWT (0.48 -> 0.52), not for yield.
+Decision: in a plot-cut year, sample every population rather than grow every line; predict the rest
+from family mean plus markers; markers alone only for populations with zero plots.
+
+Breeder's equation, top 20% advanced, true genetic sd ~6.3 bu/ac: r=0.14 -> +1.2, r=0.35 -> +3.1,
+r=0.50 -> +4.4 bu/ac. 2008 as run = 77,353 plots; sampling half saves ~39,000 plots and keeps ~70% of gain.
+
+`results/advance2008.csv` (not committed): 8,014 lines, 1,602 flagged, index = 0.5 yield + 0.1 TWT
+- 0.15 MST - 0.05 ERM - 0.2 observed family lodging. Realised 2008 yield gain of the flagged set +2.6 bu/ac.
 
 ## What we already know (Sep 18 runs)
 
