@@ -17,9 +17,15 @@ After the clean build (`results/pheno_env_ready.pkl`):
 | Lines | 154,551 |
 | Populations | 998 |
 | Year × location environments | 1,185 |
-| 2008 lines already in the file | 15,967 |
+| 2008 candidate set | **15,968** |
+| 2008 evaluation set | **15,959** |
 
 Every line is tested in **exactly one year**. 2008 is not a future we invent; it is already here. Train on 2000–2007.
+
+**2008 split (put this on the slide):** the scenario asks which of the lines about to be planted should advance. Markers exist for all of them, so we **predict all 15,968** and **score the 15,959** we can observe.
+
+- Drop 6 lines with no recorded yield: `C1.379.46`, `C1.396.183`, `C1.430.58`, `C2.386.43.0`, `C2.399.26.0`, `C2.408.52.0`
+- Drop 3 lines whose only yields are at sites with no weather: `C2.421.11.0` (KSGC), `C2.422.13.0` (KSGC, KSJO), `C2.425.17.0` (INWS)
 
 ## Trap 1 — C2 IDs look like Excel floats
 
