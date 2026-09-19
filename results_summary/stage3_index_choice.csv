@@ -1,0 +1,3 @@
+yield_predictor,r_yield,index_gain,oracle,families_in_top20,yield_only_gain,used,rule
+sibling mean,0.3639528208372374,4.1511828348066615,12.889250969035304,52,4.911538045721711,False,"two-stage if index gains within 0.1 bu/ac, else the higher"
+two-stage,0.36008789578627926,4.1277268589548965,12.889250969035304,115,4.463968667572788,True,"two-stage if index gains within 0.1 bu/ac, else the higher"

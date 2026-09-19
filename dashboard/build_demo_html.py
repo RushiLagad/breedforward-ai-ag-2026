@@ -2,7 +2,7 @@
 
     python dashboard/build_demo_html.py   (from the repo root) -> results/breedforward_demo.html
 
-The output embeds the 8,014-line advancement table (predictions + real 2008 yields). It is a team/judging-room
+The output embeds the held-out-line advancement table (predictions + real 2008 yields). It is a team/judging-room
 file and stays under results/ (gitignored). No network, no server: double-click to open.
 """
 import json
@@ -17,23 +17,26 @@ CURVE = Path(sys.argv[2]) if len(sys.argv) > 2 else Path("results_summary/stage4
 OUT = Path(sys.argv[3]) if len(sys.argv) > 3 else Path("results/breedforward_demo.html")
 
 adv = pd.read_csv(ADV, dtype={"LINE_ID": str, "POP": str})
-z = lambda s: ((s - s.mean()) / s.std()).round(3)
+# values are carried at the precision written by predict_siblings.py (4 dp); z-scores are computed in the
+# page in double precision with the same (n-1) sd as pandas, and the cut is int(frac*N), so the page
+# reproduces the Python index and gain to the fourth decimal.
 cols = {
     "id": adv.LINE_ID.tolist(),
     "pop": adv.POP.tolist(),
     "hg": adv.HG.astype(int).tolist(),
-    "yld": adv.pred_yld.round(2).tolist(),
-    "mst": adv.pred_mst.round(3).tolist(),
-    "twt": adv.pred_twt.round(3).tolist(),
-    "erm": adv.pred_erm.round(3).tolist(),
-    "lodg": adv.pop_lodging_obs.round(2).tolist(),
-    "obs": adv.obs_yld_2008.round(2).tolist(),
-    "z": {k: z(adv[c]).tolist() for k, c in [("yld", "pred_yld"), ("twt", "pred_twt"), ("mst", "pred_mst"), ("erm", "pred_erm"), ("lodg", "pop_lodging_obs")]},
+    "yld": adv.pred_yld.tolist(),
+    "mst": adv.pred_mst.tolist(),
+    "twt": adv.pred_twt.tolist(),
+    "erm": adv.pred_erm.tolist(),
+    "lodg": adv.pop_lodging_obs.tolist(),
+    "obs": adv.obs_yld_2008.tolist(),
 }
+s3 = pd.read_csv("results_summary/stage3_schemes.csv"); g0 = s3[s3.trait == "YLD"].iloc[0]
 curve = pd.read_csv(CURVE)
 c = curve[(curve.trait == "YLD") & (curve.scheme == "sib")].sort_values("frac")
 curve_js = {"frac": c.frac.tolist(), "r": c.r.round(3).tolist(), "gain": c.gain.round(2).tolist(),
-            "plots": c.plots_used.astype(int).tolist(), "gain_max": round(float(c.gain_max.mean()), 2)}
+            "plots": c.plots_used.astype(int).tolist(), "gain_max": round(float(c.gain_max.mean()), 2),
+            "r0": round(float(g0.r_newyear), 3), "gain0": round(float(g0.gain_newyear), 2)}
 data_js = json.dumps(cols, separators=(",", ":"))
 curve_js = json.dumps(curve_js, separators=(",", ":"))
 
@@ -117,7 +120,7 @@ kbd{font:12px ui-monospace,Menlo,Consolas,monospace;background:var(--grid);paddi
 <div class="wrap">
 <header>
   <div class="brand"><b>Breed</b><i>Forward</i></div>
-  <div class="scen">January 2008. The plots are cut. Which of these 8,014 lines advance?</div>
+  <div class="scen">2008, plots cut. Half of every family was planted and harvested. Which of the untested siblings advance?</div>
 </header>
 
 <div class="grid">
@@ -134,12 +137,12 @@ kbd{font:12px ui-monospace,Menlo,Consolas,monospace;background:var(--grid);paddi
       <label><span>share of candidates to advance</span><output id="fracOut">20%</output></label>
       <input type="range" id="frac" min="5" max="50" step="5" value="20">
     </div>
-    <p class="note">Weights apply to z-scores of each trait. Predictions are as of January 2008: mean of the phenotyped siblings plus a within-family marker model. Observed 2008 yield is used only to score the choice.</p>
+    <p class="note">Weights apply to z-scores of each trait. Predictions use only the phenotyped siblings and the markers: family mean plus a within-family marker model. The untested lines' own 2008 yields are never used to predict, only to score the choice afterwards.</p>
   </aside>
 
   <main>
     <div class="tiles">
-      <div class="tile"><div class="k">candidate lines</div><div class="v" id="tN"></div><div class="d">held-out half of every 2008 family</div></div>
+      <div class="tile"><div class="k">untested candidate lines</div><div class="v" id="tN"></div><div class="d">the unplanted half of every 2008 family</div></div>
       <div class="tile"><div class="k">advanced</div><div class="v" id="tK"></div><div class="d" id="tKd"></div></div>
       <div class="tile"><div class="k">realised 2008 yield gain</div><div class="v" id="tG"></div><div class="d">advanced set mean minus all-candidate mean, bu/ac</div></div>
       <div class="tile"><div class="k">of perfect foresight</div><div class="v" id="tP"></div><div class="d" id="tPd"></div></div>
@@ -164,7 +167,7 @@ kbd{font:12px ui-monospace,Menlo,Consolas,monospace;background:var(--grid);paddi
         <div class="tw"><table id="tbl"><thead><tr>
           <th>rank</th><th>line</th><th>family</th><th>HG</th><th>pred yield</th><th>pred MST</th><th>pred TWT</th><th>pred ERM</th><th>family lodging</th><th>index</th><th>advance</th><th>obs 2008 yield</th>
         </tr></thead><tbody></tbody></table></div>
-        <p class="note">pred_* are model predictions made with January 2008 information. Yields are deviations from the environment by tester mean, bu/ac. Blue bar = advanced under the current weights.</p>
+        <p class="note">pred_* are predictions from the phenotyped siblings and the markers. Yields are deviations from the environment by tester mean (training plots only), bu/ac. Blue bar = advanced under the current weights. Ties break on line id.</p>
       </section>
 
       <section class="panel" id="p-fam">
@@ -177,7 +180,7 @@ kbd{font:12px ui-monospace,Menlo,Consolas,monospace;background:var(--grid);paddi
 
       <section class="panel" id="p-qual">
         <h3 id="qualTitle"></h3>
-        <p class="sub">Every candidate line: predicted against observed 2008 yield. Real signal, lots of noise. The ceiling is r about 0.68 because each 2008 line mean rests on about five plots.</p>
+        <p class="sub">Every untested line: predicted against its real 2008 yield, which the model never saw. Real signal, lots of noise. The ceiling is r about 0.68 because each 2008 line mean rests on about five plots.</p>
         <div class="legend"><span style="--c:var(--blue)">advanced under current weights</span><span style="--c:var(--ctx)">not advanced</span></div>
         <div id="qualChart"></div>
       </section>
@@ -186,7 +189,7 @@ kbd{font:12px ui-monospace,Menlo,Consolas,monospace;background:var(--grid);paddi
         <h3>Ten percent of every family buys most of the gain</h3>
         <p class="sub">Phenotype a random share of each 2008 family, predict the rest from the family mean, advance the top 20%, score on real 2008 yield. Mean of three draws. This is the answer to the plot-cut question.</p>
         <div class="two"><div id="curveGain"></div><div id="curveR"></div></div>
-        <p class="note">Zero percent is the genotype-only model (r 0.13, +1.7 bu/ac). Perfect foresight would be +12.7. The advancement list uses the 50% split with within-family markers added on top.</p>
+        <p class="note" id="curveNote"></p>
       </section>
     </div>
   </main>
@@ -199,16 +202,18 @@ const D = __DATA__;
 const CURVE = __CURVE__;
 const N = D.id.length;
 const KEYS = ["yld","twt","mst","erm","lodg"];
+D.z = {}; for (const k of KEYS){ const a=D[k]; const n=a.length; const mu=a.reduce((s,v)=>s+v,0)/n; const sd=Math.sqrt(a.reduce((s,v)=>s+(v-mu)*(v-mu),0)/(n-1)); D.z[k]=a.map(v=>(v-mu)/sd); }
 const LAB = {yld:"yield (predicted)", twt:"test weight (predicted)", mst:"moisture (predicted, negative = drier is better)", erm:"maturity (predicted, negative = earlier is better)", lodg:"family lodging (observed, negative = less is better)"};
 const PRESETS = {default:{yld:.5,twt:.1,mst:-.15,erm:-.05,lodg:-.2}, yield:{yld:1,twt:0,mst:0,erm:0,lodg:0}, equal:{yld:.2,twt:.2,mst:-.2,erm:-.2,lodg:-.2}};
 let preset = "default", W = {...PRESETS.default}, frac = 0.20;
-let order = [], advanced = new Uint8Array(N), rankOf = new Int32Array(N), idx = new Float32Array(N);
+let order = [], advanced = new Uint8Array(N), rankOf = new Int32Array(N), idx = new Float64Array(N);
+const byIdx = (a,b) => (idx[b]-idx[a]) || (D.id[a] < D.id[b] ? -1 : D.id[a] > D.id[b] ? 1 : 0);
 const $ = s => document.querySelector(s);
 const fmt = (x,d=2) => (x>=0?"+":"") + x.toFixed(d);
 const obsMean = D.obs.reduce((a,b)=>a+b,0)/N;
 const pct=(arr,q)=>{const a=[...arr].sort((x,y)=>x-y); return a[Math.min(a.length-1,Math.floor(q*a.length))];};
 const XR=[Math.floor(pct(D.yld,0.002)), Math.ceil(pct(D.yld,0.998))], YR=[Math.floor(pct(D.obs,0.002)/5)*5, Math.ceil(pct(D.obs,0.998)/5)*5];
-const oracleGain = (() => { const s=[...D.obs].sort((a,b)=>b-a); return k => s.slice(0,k).reduce((a,b)=>a+b,0)/k - obsMean; })();
+const oracleGain = (() => { const o=Array.from({length:N},(_,i)=>i).sort((a,b)=>(D.obs[b]-D.obs[a]) || (D.id[a] < D.id[b] ? -1 : 1)); return k => { let s=0; for(let r=0;r<k;r++) s+=D.obs[o[r]]; return s/k - obsMean; }; })();
 
 // ---------- sliders ----------
 const sl = $("#sliders");
@@ -237,14 +242,14 @@ document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click
 // ---------- compute ----------
 function compute(){
   for (let i=0;i<N;i++){ let s=0; for (const k of KEYS) s += W[k]*D.z[k][i]; idx[i]=s; }
-  order = Array.from({length:N},(_,i)=>i).sort((a,b)=>idx[b]-idx[a]);
-  const K = Math.round(frac*N);
+  order = Array.from({length:N},(_,i)=>i).sort(byIdx);
+  const K = Math.floor(frac*N + 1e-9);
   advanced.fill(0); let sum=0;
   order.forEach((i,r)=>{ rankOf[i]=r+1; if(r<K){advanced[i]=1; sum+=D.obs[i];} });
   return {K, gain: sum/K - obsMean, oracle: oracleGain(K)};
 }
 let S;
-const REF = (() => { const w=PRESETS.default; const v=new Float32Array(N); for(let i=0;i<N;i++){let t=0; for(const k of KEYS) t+=w[k]*D.z[k][i]; v[i]=t;} const o=Array.from({length:N},(_,i)=>i).sort((a,b)=>v[b]-v[a]); const K=Math.round(0.2*N); let s=0; for(let r=0;r<K;r++) s+=D.obs[o[r]]; return s/K-obsMean; })();
+const REF = (() => { const w=PRESETS.default; const v=new Float64Array(N); for(let i=0;i<N;i++){let t=0; for(const k of KEYS) t+=w[k]*D.z[k][i]; v[i]=t;} const o=Array.from({length:N},(_,i)=>i).sort((a,b)=>(v[b]-v[a]) || (D.id[a] < D.id[b] ? -1 : 1)); const K=Math.floor(0.2*N+1e-9); let s=0; for(let r=0;r<K;r++) s+=D.obs[o[r]]; return s/K-obsMean; })();
 function render(){
   KEYS.forEach(k => { const el=$("#w-"+k); el.value=W[k]; el.disabled = preset!=="custom"; $("#o-"+k).textContent=W[k].toFixed(2); $("#sl-"+k).classList.toggle("dis", preset!=="custom"); });
   $("#fracOut").textContent = Math.round(frac*100)+"%";
@@ -303,11 +308,12 @@ function drawFam(){
   const xs=scale(-fx,fx,m.l,w-m.r), ys=scale(-fy,fy,h-m.b,m.t);
   let s=frame(w,h,m,xs,ys,"family mean predicted yield, bu/ac (deviation)","family mean observed 2008 yield");
   s+=`<line class="ax" x1="${xs(0)}" x2="${xs(0)}" y1="${m.t}" y2="${h-m.b}" stroke-dasharray="3 3"/><line class="ax" x1="${m.l}" x2="${w-m.r}" y1="${ys(0)}" y2="${ys(0)}" stroke-dasharray="3 3"/>`;
-  F.sort((a,b)=>b.n-a.n).forEach((f,j)=>{ const r=Math.max(4,Math.sqrt(f.n)*1.6); const col=f.share>=.5?"var(--blue)":f.share>0?"var(--blue2)":"var(--ctx)";
+  const drawOrder = [...F].sort((a,b)=>b.n-a.n);   // a copy: the tooltip index must refer to this order
+  drawOrder.forEach((f,j)=>{ const r=Math.max(4,Math.sqrt(f.n)*1.6); const col=f.share>=.5?"var(--blue)":f.share>0?"var(--blue2)":"var(--ctx)";
     s+=`<circle data-j="${j}" cx="${xs(f.py)}" cy="${ys(f.oy)}" r="${r}" fill="${col}" fill-opacity=".8" stroke="var(--card)" stroke-width="1.5"/>`; });
   s+="</svg>"; const el=$("#famChart"); el.innerHTML=s;
-  el.querySelectorAll("circle").forEach(c=>{ const f=F[+c.dataset.j]; c.addEventListener("mousemove",e=>showTT(e,`<b>${f.pop}</b> (HG ${f.hg})<br>${f.n} candidate lines, ${f.adv} advanced (${Math.round(100*f.share)}%)<br>pred ${fmt(f.py)}, observed 2008 ${fmt(f.oy)} bu/ac<br>family lodging ${f.lodg.toFixed(2)}`)); c.addEventListener("mouseleave",hideTT); });
-  $("#famTbl tbody").innerHTML = F.sort((a,b)=>b.oy-a.oy).map(f=>`<tr><td>${f.pop}</td><td>${f.hg}</td><td>${f.n}</td><td>${f.adv}</td><td>${Math.round(100*f.share)}%</td><td>${f.py.toFixed(2)}</td><td>${f.oy.toFixed(2)}</td><td>${f.lodg.toFixed(2)}</td></tr>`).join("");
+  el.querySelectorAll("circle").forEach(c=>{ const f=drawOrder[+c.dataset.j]; c.addEventListener("mousemove",e=>showTT(e,`<b>${f.pop}</b> (HG ${f.hg})<br>${f.n} candidate lines, ${f.adv} advanced (${Math.round(100*f.share)}%)<br>pred ${fmt(f.py)}, observed 2008 ${fmt(f.oy)} bu/ac<br>family lodging ${f.lodg.toFixed(2)}`)); c.addEventListener("mouseleave",hideTT); });
+  $("#famTbl tbody").innerHTML = [...F].sort((a,b)=>b.oy-a.oy).map(f=>`<tr><td>${f.pop}</td><td>${f.hg}</td><td>${f.n}</td><td>${f.adv}</td><td>${Math.round(100*f.share)}%</td><td>${f.py.toFixed(2)}</td><td>${f.oy.toFixed(2)}</td><td>${f.lodg.toFixed(2)}</td></tr>`).join("");
 }
 function pearson(a,b){ let n=a.length,sa=0,sb=0; for(let i=0;i<n;i++){sa+=a[i];sb+=b[i];} sa/=n;sb/=n; let xy=0,xx=0,yy=0; for(let i=0;i<n;i++){const u=a[i]-sa,v=b[i]-sb; xy+=u*v;xx+=u*u;yy+=v*v;} return xy/Math.sqrt(xx*yy); }
 function drawQual(){
@@ -325,7 +331,7 @@ function drawQual(){
   el.addEventListener("mouseleave", hideTT);
 }
 function drawCurve(){
-  const C=CURVE; const fr=[0,...C.frac], gain=[1.7,...C.gain], rr=[0.13,...C.r], plots=[0,...C.plots];
+  const C=CURVE; const fr=[0,...C.frac], gain=[C.gain0,...C.gain], rr=[C.r0,...C.r], plots=[0,...C.plots];
   const mk=(id,ys0,ys1,vals,yl,ref)=>{ const w=440,h=300,m={l:52,r:16,t:16,b:44}; const xs=scale(0,80,m.l,w-m.r), ys=scale(ys0,ys1,h-m.b,m.t);
     let s=frame(w,h,m,xs,ys,"share of each family phenotyped, %",yl,v=>v,v=>ref?v.toFixed(0):v.toFixed(1));
     if(ref){ s+=`<line x1="${m.l}" x2="${w-m.r}" y1="${ys(C.gain_max)}" y2="${ys(C.gain_max)}" stroke="var(--muted)" stroke-dasharray="4 3"/><text x="${w-m.r-4}" y="${ys(C.gain_max)-5}" text-anchor="end">perfect foresight ${fmt(C.gain_max,1)}</text>`; }
@@ -337,6 +343,7 @@ function drawCurve(){
   };
   mk("#curveGain",0,14,gain,"realised 2008 gain, bu/ac (top 20% advanced)",true);
   mk("#curveR",0,0.5,rr,"accuracy, r with observed 2008 yield",false);
+  $("#curveNote").textContent = `Zero percent is the genotype-only model (r ${C.r0.toFixed(2)}, ${fmt(C.gain0,1)} bu/ac). Perfect foresight would be ${fmt(C.gain_max,1)}. The advancement list uses the 50% split with within-family markers added on top.`;
 }
 render();
 </script>

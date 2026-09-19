@@ -1,0 +1,8 @@
+# Exact versions of the reference run (Linux, Python 3.11, Sep 19 2026). Windows reproduction: run `pip freeze > requirements-windows.txt` and commit it.
+matplotlib==3.10.9
+numpy==2.4.4
+pandas==3.0.2
+pyarrow==25.0.1
+scikit-learn==1.8.0
+scipy==1.17.1
+streamlit==1.64.0

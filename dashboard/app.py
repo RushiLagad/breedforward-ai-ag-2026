@@ -28,7 +28,7 @@ Z = {"yld": z(adv.pred_yld), "twt": z(adv.pred_twt), "mst": z(adv.pred_mst), "er
 
 # ---------------- sidebar: the breeder's lever ----------------
 st.sidebar.title("BreedForward")
-st.sidebar.caption("January 2008. Plots are cut. Which of these lines advance?")
+st.sidebar.caption("2008, plots cut. Half of every family was planted. Which untested siblings advance?")
 st.sidebar.subheader("Index weights")
 preset = st.sidebar.radio("preset", ["default", "yield only", "equal weights", "custom"], horizontal=True)
 presets = {
@@ -49,7 +49,7 @@ frac = st.sidebar.slider("share of candidates to advance", 0.05, 0.5, 0.20, 0.05
 # ---------------- recompute the list under these weights ----------------
 adv = adv.copy()
 adv["index"] = sum(w[k] * Z[k] for k in Z)
-adv = adv.sort_values("index", ascending=False)
+adv = adv.sort_values(["index", "LINE_ID"], ascending=[False, True], kind="mergesort")
 adv["rank"] = np.arange(1, len(adv) + 1)
 k = int(frac * len(adv))
 adv["advance"] = adv["rank"] <= k
@@ -57,9 +57,9 @@ top = adv[adv.advance]
 gain = top.obs_yld_2008.mean() - adv.obs_yld_2008.mean()
 oracle = adv.nlargest(k, "obs_yld_2008").obs_yld_2008.mean() - adv.obs_yld_2008.mean()
 
-st.title("Which 2008 lines should advance?")
+st.title("Which untested 2008 siblings should advance?")
 c1, c2, c3, c4 = st.columns(4)
-c1.metric("candidate lines", f"{len(adv):,}")
+c1.metric("untested candidate lines", f"{len(adv):,}")
 c2.metric(f"advanced (top {frac:.0%})", f"{k:,}")
 c3.metric("realised 2008 yield gain", f"{gain:+.2f} bu/ac", help="mean observed 2008 yield of the advanced set minus the mean of all candidates")
 c4.metric("of what perfect foresight would get", f"{100 * gain / oracle:.0f}%", help=f"perfect foresight: {oracle:+.2f} bu/ac")
@@ -75,7 +75,7 @@ with tab1:
     d = adv if pop == "all" else adv[adv.POP == pop]
     cols = ["rank", "LINE_ID", "POP", "HG", "pred_yld", "pred_mst", "pred_twt", "pred_erm", "pop_lodging_obs", "index", "advance", "obs_yld_2008"]
     st.dataframe(d[cols].head(300).round(2), hide_index=True, width="stretch")
-    st.caption("pred_* are model predictions made as of January 2008. obs_yld_2008 is what actually happened, shown only to score ourselves.")
+    st.caption("pred_* come from the phenotyped siblings and the markers only. obs_yld_2008 is what actually happened to the untested lines, shown only to score ourselves. Ties break on LINE_ID.")
     st.download_button("download full list", adv[cols].to_csv(index=False).encode(), "advance2008_ranked.csv")
 
 with tab2:
@@ -91,5 +91,5 @@ with tab3:
     r = np.corrcoef(adv.pred_yld, adv.obs_yld_2008)[0, 1]
     st.subheader(f"Predicted vs observed 2008 yield, r = {r:.2f}")
     st.scatter_chart(adv.sample(min(len(adv), 4000), random_state=0), x="pred_yld", y="obs_yld_2008", color="advance")
-    st.caption("family mean plus within-family markers, made with January 2008 information. Real signal, lots of noise. The advanced set (colored) sits visibly higher on average than the rest. "
+    st.caption("family mean plus within-family markers, from the phenotyped siblings only. Real signal, lots of noise. The advanced set (colored) sits visibly higher on average than the rest. "
                "The ceiling is r ~ 0.68 because each 2008 line mean rests on only ~5 plots.")

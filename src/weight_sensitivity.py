@@ -1,23 +1,34 @@
-"""Index-weight sensitivity for the 2008 advancement list.
-How much does the flagged top-20% set change when the weights change, and what does each weight buy
-in realised 2008 yield, moisture, test weight and observed family lodging?"""
-import numpy as np, pandas as pd
+"""Stage 5: index-weight sensitivity for the 2008 advancement list.
+How much does the flagged top-20% set change when the weights change, and what does each weight buy in
+realised 2008 yield, predicted moisture and test weight, and observed family lodging?
+
+Differences are reported in z units (difference of means divided by the candidate sd) so the columns
+are comparable. Ties in the index break on LINE_ID. Outputs:
+  results_summary/stage5_weight_sensitivity.csv   the named weightings
+  results_summary/stage5_random_sweep.csv          summary of the 500 random weightings
+"""
+import numpy as np
+import pandas as pd
+from common import rank_desc
+
 adv = pd.read_csv("results/advance2008.csv", dtype={"LINE_ID": str, "POP": str})
 z = lambda s: (s - s.mean()) / s.std()
 cols = {"yld": "pred_yld", "twt": "pred_twt", "mst": "pred_mst", "erm": "pred_erm", "lodg": "pop_lodging_obs"}
 Z = {k: z(adv[c]) for k, c in cols.items()}
 k = int(0.2 * len(adv))
+sd = {c: adv[c].std() for c in ["pred_mst", "pred_twt", "pop_lodging_obs"]}
 
-# observed 2008 outcomes for scoring (yield observed; other traits use predictions since we only stored obs yield)
+
 def score(w, name):
-    idx = sum(w[t] * Z[t] for t in w)
-    top = adv.iloc[np.argsort(-idx.values)[:k]]
+    d = adv.assign(_i=sum(w.get(t, 0) * Z[t] for t in cols))
+    top = rank_desc(d, "_i").head(k)
     return dict(scheme=name, **{f"w_{t}": w.get(t, 0) for t in cols},
                 yld_gain=top.obs_yld_2008.mean() - adv.obs_yld_2008.mean(),
-                mst_pred=top.pred_mst.mean() - adv.pred_mst.mean(),
-                twt_pred=top.pred_twt.mean() - adv.pred_twt.mean(),
-                lodg_obs=top.pop_lodging_obs.mean() - adv.pop_lodging_obs.mean(),
-                top_set=set(top.LINE_ID))
+                mst_pred_z=(top.pred_mst.mean() - adv.pred_mst.mean()) / sd["pred_mst"],
+                twt_pred_z=(top.pred_twt.mean() - adv.pred_twt.mean()) / sd["pred_twt"],
+                lodg_obs_z=(top.pop_lodging_obs.mean() - adv.pop_lodging_obs.mean()) / sd["pop_lodging_obs"],
+                families=top.POP.nunique(), top_set=set(top.LINE_ID))
+
 
 base = {"yld": 0.5, "twt": 0.1, "mst": -0.15, "erm": -0.05, "lodg": -0.2}
 schemes = [
@@ -33,15 +44,21 @@ rows = [score(w, n) for n, w in schemes]
 ref = rows[1]["top_set"]
 for r in rows: r["overlap_with_default"] = len(r["top_set"] & ref) / k
 out = pd.DataFrame(rows).drop(columns="top_set")
-pd.set_option("display.width", 200)
+pd.set_option("display.width", 220)
 print(out.round(3).to_string(index=False))
 out.round(4).to_csv("results_summary/stage5_weight_sensitivity.csv", index=False)
 
 # random-weight sweep: how stable is the flagged set under any reasonable weighting?
-rng = np.random.default_rng(0); ov = []; yg = []
+rng = np.random.default_rng(0)
+sw = []
 for _ in range(500):
-    w = {"yld": rng.uniform(0.3, 0.8), "twt": rng.uniform(0, 0.2), "mst": -rng.uniform(0, 0.35), "erm": -rng.uniform(0, 0.15), "lodg": -rng.uniform(0, 0.4)}
-    r = score(w, "rand"); ov.append(len(r["top_set"] & ref) / k); yg.append(r["yld_gain"])
-print(f"\n500 random weightings (yield 0.3-0.8, others within plausible ranges): overlap with default top-20% "
-      f"median {np.median(ov):.2f} (5th-95th {np.percentile(ov,5):.2f}-{np.percentile(ov,95):.2f}); "
-      f"realised yield gain median {np.median(yg):+.2f} bu/ac (5th-95th {np.percentile(yg,5):+.2f} to {np.percentile(yg,95):+.2f})")
+    w = {"yld": rng.uniform(0.3, 0.8), "twt": rng.uniform(0, 0.25), "mst": -rng.uniform(0, 0.35), "erm": -rng.uniform(0, 0.15), "lodg": -rng.uniform(0, 0.4)}
+    r = score(w, "random"); sw.append(dict(**{kk: v for kk, v in r.items() if kk != "top_set"}, overlap_with_default=len(r["top_set"] & ref) / k))
+sw = pd.DataFrame(sw)
+q = lambda s: (s.median(), s.quantile(0.05), s.quantile(0.95))
+summary = pd.DataFrame([dict(metric=m, median=q(sw[m])[0], p05=q(sw[m])[1], p95=q(sw[m])[2]) for m in ["overlap_with_default", "yld_gain", "mst_pred_z", "lodg_obs_z", "families"]])
+summary["n_weightings"] = 500; summary["ranges"] = "yld 0.3-0.8, twt 0-0.25, mst 0 to -0.35, erm 0 to -0.15, lodg 0 to -0.4"
+summary.round(4).to_csv("results_summary/stage5_random_sweep.csv", index=False)
+o, g = q(sw.overlap_with_default), q(sw.yld_gain)
+print(f"\n500 random weightings: overlap with default top-20% median {o[0]:.2f} (5th-95th {o[1]:.2f}-{o[2]:.2f}); "
+      f"realised yield gain median {g[0]:+.2f} bu/ac (5th-95th {g[1]:+.2f} to {g[2]:+.2f})")

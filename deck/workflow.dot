@@ -1,52 +1,28 @@
+// BreedForward pipeline. Render: dot -Tpng -Gdpi=200 deck/workflow.dot -o deck/workflow.png
 digraph BreedForward {
-  graph [rankdir=TB, fontname="Helvetica", fontsize=13, bgcolor="white", pad=0.4, nodesep=0.35, ranksep=0.55, splines=ortho];
-  node  [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=12, color="#9AA69E", fillcolor="white", penwidth=1.2, margin="0.18,0.10"];
-  edge  [color="#5F6A63", penwidth=1.3, arrowsize=0.8];
+  graph [rankdir=TB, fontname="Helvetica", bgcolor="white", pad=0.3, nodesep=0.35, ranksep=0.45, splines=spline];
+  node  [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=12, color="#C9D2CC", fillcolor="white", fontcolor="#1B2230", margin="0.18,0.10"];
+  edge  [color="#64707A", arrowsize=0.8, penwidth=1.2];
 
-  Q [label="THE QUESTION (Bayer scenario)\nJanuary 2008, field plots cut.\nWhich of the 15,959 lines about to be planted should advance?", shape=box, style="filled", fillcolor="#1B2320", fontcolor="white", fontsize=13, penwidth=0];
-  H [label="HYPOTHESIS\nGenotypes + 2001-2007 testcross data predict 2008 line performance\nwell enough to advance the right 20% without growing them all.", fillcolor="#DCEFE2", color="#2F7D4B"];
+  ph  [label=<<b>C1/C2 phenotypes</b><br/><font point-size="10" color="#64707A">1.07M plots, 8 traits</font>>];
+  mk  [label=<<b>2,911 SNP markers</b><br/><font point-size="10" color="#64707A">one shared panel</font>>];
+  env [label=<<b>Environment data</b><br/><font point-size="10" color="#64707A">1,185 year x location, 84 covariates</font>>];
+  tab [label=<<b>One clean table</b><br/><font point-size="10" color="#64707A">1.02M plots · 154,551 lines · 998 families</font>>];
+  cen [label=<<b>Line values centred within environment x tester</b><br/><font point-size="10" color="#64707A">GCA; tester effects removed; training plots only</font>>];
+  gxe [label=<<b>G x E test: between-regime r = within-regime reliability</b><br/><font point-size="10" color="#64707A">no re-ranking, so predict broad-acre</font>>];
+  hist[label=<<b>Historical-only marker model</b><br/><font point-size="10" color="#64707A">ridge, 2001–2007 · r 0.14 · baseline and fallback</font>>];
+  sib [label=<<b>Sparse 2008 sibling evidence</b><br/><font point-size="10" color="#64707A">a share of EVERY family phenotyped (stratified)</font>>];
+  cur [label=<<b>Sampling curve</b><br/><font point-size="10" color="#64707A">plots spent vs realised gain</font>>];
+  two [label=<<b>Two-stage prediction</b><br/><font point-size="10" color="#64707A">family mean + within-family markers · r 0.36</font>>];
+  idx [label=<<b>Weighted advancement index → ranked candidates</b><br/><font point-size="10" color="#2E6B3A">scored against the real 2008 season, which no model saw</font>>];
 
-  subgraph cluster_data {
-    label="1 · DATA  (Fri night)"; fontname="Helvetica-Bold"; fontsize=12; color="#D7DBD2"; style="rounded"; bgcolor="#F3F4F0";
-    D1 [label="Phenotypes C1 + C2\n1.07M testcross plots, 2000-2008"];
-    D2 [label="Environment\n1,185 year x location, 84 covariates"];
-    D3 [label="Genotypes\n999 populations, one 2,911-SNP panel"];
-    B  [label="Clean table\nLINE_UNIQUE_ID · tester · env · traps list", fillcolor="#FFFFFF"];
-    D1 -> B; D2 -> B; D3 -> B;
-  }
-
-  subgraph cluster_model {
-    label="2 · MODEL  (Sat)"; fontname="Helvetica-Bold"; fontsize=12; color="#D7DBD2"; style="rounded"; bgcolor="#F3F4F0";
-    A  [label="Adjust yield for environment x tester\n→ one GCA value per line"];
-    M1 [label="Baselines\npopulation mean · parent GCA"];
-    M2 [label="Genomic prediction\nridge / GBLUP on 2,911 SNPs\ntrain 2000-2007"];
-    V  [label="Validate on the real 2008 season\nr, top-20% genetic gain, vs baselines", fillcolor="#F6EBCF", color="#B8891F"];
-    A -> M1; A -> M2; M1 -> V; M2 -> V;
-  }
-
-  subgraph cluster_gxe {
-    label="3 · BROAD vs SPECIFIC  (Sat)"; fontname="Helvetica-Bold"; fontsize=12; color="#D7DBD2"; style="rounded"; bgcolor="#F3F4F0";
-    G1 [label="Environment regimes\nflowering-window heat + water"];
-    G2 [label="Do lines re-rank across regimes?\nbetween-regime r vs within-regime reliability"];
-    G3 [label="Answer: no (0.23 vs 0.18-0.25)\n→ predict broad-acre, save the plots", fillcolor="#F6DFDA", color="#B2432F"];
-    G1 -> G2 -> G3;
-  }
-
-  subgraph cluster_decide {
-    label="4 · DECISION + DEMO  (Sun)"; fontname="Helvetica-Bold"; fontsize=12; color="#D7DBD2"; style="rounded"; bgcolor="#F3F4F0";
-    R1 [label="Ranked advancement list\nyield · moisture · test weight · standability · maturity"];
-    R2 [label="Resource math\nplots saved x accuracy = expected gain"];
-    R3 [label="Streamlit demo\npick a population, see predicted vs observed 2008", fillcolor="#DCEFE2", color="#2F7D4B"];
-    R1 -> R3; R2 -> R3;
-  }
-
-  Q -> H;
-  H -> D1 [style=invis]; H -> D2 [style=invis]; H -> D3 [style=invis];
-  B -> A;
-  B -> G1;
-  V -> R1; V -> R2;
-  G3 -> R1;
-
-  OUT [label="DELIVERABLES\n10 slides · live demo · GitHub repo · one honest number", shape=box, style="filled", fillcolor="#2F7D4B", fontcolor="white", penwidth=0];
-  R3 -> OUT;
+  {rank=same; ph; mk; env}
+  {rank=same; hist; sib}
+  {rank=same; two; cur}
+  ph -> tab; env -> tab; tab -> cen; cen -> gxe;
+  gxe -> hist; gxe -> sib; sib -> cur; sib -> two;
+  hist -> two [style=dashed, label=<<font point-size="9" color="#64707A"> fallback / baseline</font>>];
+  two -> idx;
+  mk -> hist [color="#C9A227", style=dashed, penwidth=1.4];
+  mk -> two  [color="#C9A227", style=dashed, penwidth=1.4, label=<<font point-size="9" color="#C9A227"> genotypes, never environment-adjusted</font>>];
 }

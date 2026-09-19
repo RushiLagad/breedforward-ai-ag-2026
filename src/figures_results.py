@@ -51,9 +51,9 @@ title(ax, "Markers add most for moisture and test weight, least for yield", "pre
 save(fig, "fig_accuracy_by_trait"); plt.close(fig)
 
 # ---------- Figure 3: breeder's equation, plots vs gain ----------
-sd_true, i20 = 6.29, 1.40
+sd_true, i20 = 6.45, 1.40
 plots_full = 77353
-scen = [("markers only\n0 plots", 0.13, 0), ("sample 1/2 of each family\n~39k plots", 0.35, 0.5), ("full trial\n77k plots", 0.50, 1.0)]
+scen = [("markers only\n0 plots", 0.13, 0), ("sample 1/2 of each family\n~39k plots", 0.36, 0.5), ("full trial\n77k plots", 0.50, 1.0)]
 fig, ax = plt.subplots(figsize=(8, 4.8))
 xs = [s[2] * plots_full / 1000 for s in scen]; ys = [i20 * s[1] * sd_true for s in scen]
 ax.plot(xs, ys, marker="o", ms=9, color=PALETTE[0], lw=2)
@@ -61,7 +61,7 @@ for (lab, rr, f), xx, yy in zip(scen, xs, ys):
     ax.annotate(f"{lab}\nr = {rr:.2f} → +{yy:.1f} bu/ac", (xx, yy), textcoords="offset points", xytext=(12, -40 if f == 1 else (14 if f == 0 else 10)), fontsize=10.5)
 ax.set_xlabel("field plots used in 2008 (thousands)"); ax.set_ylabel("expected gain, top 20% advanced (bu/ac)")
 ax.set_xlim(-4, 92); ax.set_ylim(0, 5.5)
-title(ax, "Half the plots keep about 70% of the gain", "breeder's equation: gain = 1.40 × accuracy × 6.3 bu/ac genetic sd")
+title(ax, "Half the plots keep about 70% of the gain", "breeder's equation: gain = 1.40 × accuracy × 6.45 bu/ac genetic sd")
 save(fig, "fig_plots_vs_gain"); plt.close(fig)
 
 # ---------- Figure 4: year-to-year accuracy vs connectedness ----------
@@ -95,6 +95,6 @@ for frac in (0.25, 0.5, 0.75):
 ax.set_xlabel("field plots spent on the 2008 candidates (thousands)"); ax.set_ylabel("gain, top 20% advanced (bu/ac)")
 ax.set_xlim(-2, 80); ax.set_ylim(0, yl.gain_max.mean() + 2)
 ax.legend(loc="center right")
-title(ax, "Phenotyping 10% of each family captures most of the achievable gain", "2008 candidates, family sampled at random, rest predicted; mean of 3 draws")
+title(ax, "Phenotyping 10% of each family captures most of the achievable gain", "2008 candidates, every family sampled (stratified), rest predicted; mean of 3 draws")
 save(fig, "fig_sampling_curve"); plt.close(fig)
 print("wrote figures/fig_sampling_curve.png")

@@ -8,8 +8,8 @@ reproduced. Two speakers, handoff at slide 6. Deadline: confirm with the organiz
 | 1 | The decision this data exists to support | Story | Sat AM |
 | 2 | Our hypothesis, stated so it could be wrong | Story | Sat AM |
 | 3 | What this data actually is (and two traps in it) | Data | Sat AM |
-| 4 | Genotype alone predicts a new year weakly (r 0.14, +1.7 of +12.7) | Modeler | Sat PM |
-| 5 | The sampling curve: 10% of each family captures most of the gain (THE figure) | Viz | Sat PM |
+| 4 | Genotype alone predicts a new year weakly (r 0.14, +1.9 of +12.7) | Modeler | Sat PM |
+| 5 | The sampling curve: 10% of every family keeps 92% of the gain at a fifth of the plots (THE figure) | Viz | Sat PM |
 | 6 | Why it holds: leave-2008-out, two years, baselines, honest ceiling | Modeler | Sat PM |
 | 7 | Broad-acre, not environment-specific: the G x E test | Viz | Sat PM |
 | 8 | The advancement list and why those weights | Story | Sun AM |
@@ -20,6 +20,8 @@ reproduced. Two speakers, handoff at slide 6. Deadline: confirm with the organiz
 
 - One sentence stating the hypothesis, memorized by all four of us.
 - One sentence for slide 6 that gives the honest number and its split in the same breath.
+- One sentence on the timeline: January decides the plot plan; after harvest, the untested siblings are ranked. Never say the sibling numbers are a January prediction.
+- One sentence on the yield trade-off: sibling mean wins yield alone by 0.02 bu/ac; two-stage keeps 115 families in the flagged set instead of 52.
 - One sentence answering "is this method novel?": the framing is ours, the mathematics is
   established, and we chose established mathematics because a weekend is not long enough
   to validate a new estimator.

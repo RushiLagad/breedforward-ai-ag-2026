@@ -1,0 +1,6 @@
+metric,median,p05,p95,n_weightings,ranges
+overlap_with_default,0.8726,0.7572,0.9505,500,"yld 0.3-0.8, twt 0-0.25, mst 0 to -0.35, erm 0 to -0.15, lodg 0 to -0.4"
+yld_gain,3.9142,2.863,4.4666,500,"yld 0.3-0.8, twt 0-0.25, mst 0 to -0.35, erm 0 to -0.15, lodg 0 to -0.4"
+mst_pred_z,-0.2183,-0.6639,0.1286,500,"yld 0.3-0.8, twt 0-0.25, mst 0 to -0.35, erm 0 to -0.15, lodg 0 to -0.4"
+lodg_obs_z,-0.4972,-0.6487,-0.2216,500,"yld 0.3-0.8, twt 0-0.25, mst 0 to -0.35, erm 0 to -0.15, lodg 0 to -0.4"
+families,114.0,101.0,121.0,500,"yld 0.3-0.8, twt 0-0.25, mst 0 to -0.35, erm 0 to -0.15, lodg 0 to -0.4"
