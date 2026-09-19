@@ -9,6 +9,7 @@ If they are equal, the re-ranking is noise. Run after src/build.py.
 Result on the 2025/2026 Bayer legacy data: between 0.23, within 0.18-0.25 (lines);
 between 0.50, within 0.45-0.64 (parents with >= 30 environments). No signal.
 """
+import os
 import glob
 import numpy as np
 import pandas as pd
@@ -55,7 +56,7 @@ print(f"  regime explains {share:.1%} of environment mean yield:", em.groupby("R
 par = {}
 for grp in ["C1", "C2"]:
     for f in glob.glob(f"data/ImputedPopulations{grp}/*.csv"):
-        pop = f.split("/")[-1].replace("_Imputed.csv", "")
+        pop = os.path.basename(f).replace("_Imputed.csv", "")
         with open(f) as fh:
             next(fh); ps = []
             for line in fh:
@@ -71,6 +72,7 @@ if par:
     cell = long.groupby(["PARENT", REG, "ENV"], observed=True).agg(yc=("ye", "mean")).reset_index()
     cell["h"] = rng.integers(0, 2, len(cell))
     good = cell.groupby("PARENT")["ENV"].nunique(); cell = cell[cell["PARENT"].isin(good[good >= 30].index)]
+    assert cell.PARENT.nunique() > 0, "no parents matched: check that data/ImputedPopulationsC1 and C2 exist"
     print(f"== PARENT level ({cell.PARENT.nunique()} parents with >= 30 environments, env-level means) ==")
     for r in ["HotDry", "CoolWet"]:
         c, n = split_half(cell[cell[REG] == r], "PARENT", 8); print(f"  within {r:8s} split-half r = {c:.3f}  ({n} parents)")

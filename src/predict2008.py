@@ -5,6 +5,7 @@ Stage 2: ridge on markers, train years < 2008, predict 2008 lines. Baselines: po
 training lines (0 for new pops), parent GCA from training years.
 Evaluate on 2008 observed line means: overall r, within-population r, and top-20% selection gain.
 """
+import os
 import glob, sys, time
 import numpy as np, pandas as pd
 from sklearn.linear_model import Ridge
@@ -32,7 +33,7 @@ for f in files:
 p = len(cols); G = np.empty((n_rows, p), dtype=np.float32); ids = []
 r0 = 0
 for f in files:
-    pop = f.split("/")[-1].replace("_Imputed.csv", "")
+    pop = os.path.basename(f).replace("_Imputed.csv", "")
     g = pd.read_csv(f, index_col=0, low_memory=False)
     assert list(g.columns) == [c.strip('"') for c in cols]
     g = g[~g.index.astype(str).str.startswith("PID")]

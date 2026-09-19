@@ -1,4 +1,5 @@
 """Stage 2: cache genotypes, tune ridge on a 2007 hold-out, validate 2007 and 2008, all five traits."""
+import os
 import glob, os, time
 import numpy as np, pandas as pd
 
@@ -15,7 +16,7 @@ if not os.path.exists("results/G.npy"):
         if cols is None: cols = [c.strip('"') for c in hdr.strip().split(",")[1:]]
     G = np.empty((n_rows, len(cols)), dtype=np.float32); ids = []; r0 = 0
     for f in files:
-        pop = f.split("/")[-1].replace("_Imputed.csv", "")
+        pop = os.path.basename(f).replace("_Imputed.csv", "")
         g = pd.read_csv(f, index_col=0, low_memory=False)
         g = g[~g.index.astype(str).str.startswith("PID")]
         G[r0:r0 + len(g)] = g.apply(pd.to_numeric, errors="coerce").to_numpy(dtype=np.float32); r0 += len(g)
