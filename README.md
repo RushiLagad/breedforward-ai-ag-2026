@@ -147,6 +147,25 @@ at one seventh of the plots. Markers on top of the family mean add r 0.37 -> 0.4
 This is the answer to the scenario's resource question: with a plot cut, sample every family thinly,
 never drop families, and use markers for the moisture and test-weight calls.
 
+## Stage 5: index-weight sensitivity (src/weight_sensitivity.py)
+
+The advancement index is 0.5 yield + 0.1 TWT - 0.15 MST - 0.05 ERM - 0.2 family lodging (z-scores).
+Realised 2008 outcomes of the flagged top 20% under different weightings:
+
+| weighting | yield gain bu/ac | moisture (z) | family lodging (z) | overlap with default set |
+|---|---|---|---|---|
+| yield only | +2.96 | +0.24 (wetter) | -0.69 | 69% |
+| default | +2.64 | -0.02 | -1.75 | 100% |
+| yield-heavy | +3.02 | +0.14 | -1.17 | 80% |
+| moisture-heavy (-0.35) | +1.81 | -0.24 | -1.50 | 78% |
+| lodging-heavy (-0.40) | +2.92 | 0.00 | -2.21 | 88% |
+| equal weights | -0.39 | -0.39 | -1.41 | 45% |
+
+500 random weightings within plausible ranges: overlap with the default set median 85% (5th-95th 68-94%),
+realised yield gain median +2.62 bu/ac (5th-95th +1.47 to +3.20). Reading: the default trades ~0.3 bu/ac of
+yield for drier grain and much lower lodging risk; the flagged set is stable to any sensible weighting;
+equal weights are the one choice that breaks it. The weights are the breeder's lever and the demo exposes them.
+
 ## What we already know (Sep 18 runs)
 
 - 1,019,864 plots, 154,551 lines, 998 populations, 1,185 environments after the merge. 52k C2 rows have no environment row and drop.
