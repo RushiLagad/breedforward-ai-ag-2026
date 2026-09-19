@@ -1,112 +1,91 @@
-"""BreedForward dashboard shell.
+"""BreedForward demo: which 2008 lines advance under a plot cut.
 
-Reads a saved results file. It NEVER fits a model. On presentation day the
-laptop must open this in two seconds, with no network and no compute.
+Reads results/advance2008.csv (written by src/predict_siblings.py). Never fits a model.
 
-    streamlit run dashboard/app.py -- --results results/results.csv
-
-Expected columns: entity, condition, estimate, se, n  (see src/rank.py).
-Optional second file: a per-entity trait table (entity, <trait>, ...) for the
-quadrant plot.
+    streamlit run dashboard/app.py
 """
-from __future__ import annotations
-
-import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import streamlit as st
 
-sys.path.append(str(Path(__file__).resolve().parents[1]))
-from src.demo import demo_results  # noqa: E402
-from src.rank import score  # noqa: E402
-
 st.set_page_config(page_title="BreedForward", layout="wide")
-
-DEFAULT_RESULTS = "results/results.csv"
-DEFAULT_TRAITS = "results/traits.csv"
+PATH = Path("results/advance2008.csv")
+if not PATH.exists():
+    st.error("results/advance2008.csv not found. Run `python src/predict_siblings.py` from the repo root first.")
+    st.stop()
 
 
 @st.cache_data
-def load(path: str) -> pd.DataFrame:
-    return pd.read_csv(path, dtype={"entity": str})
+def load() -> pd.DataFrame:
+    return pd.read_csv(PATH, dtype={"LINE_ID": str, "POP": str})
 
 
+adv = load()
+z = lambda s: (s - s.mean()) / s.std()
+Z = {"yld": z(adv.pred_yld_aug), "twt": z(adv.pred_twt), "mst": z(adv.pred_mst), "erm": z(adv.pred_erm), "lodg": z(adv.pop_lodging_obs)}
+
+# ---------------- sidebar: the breeder's lever ----------------
 st.sidebar.title("BreedForward")
-path = st.sidebar.text_input("results file", DEFAULT_RESULTS)
-if Path(path).exists():
-    res = load(path)
-    st.sidebar.success(f"{res['entity'].nunique():,} entities loaded")
-else:
-    res = demo_results()
-    st.sidebar.warning("Demo data. Point this at results/results.csv when it exists.")
+st.sidebar.caption("January 2008. Plots are cut. Which of these lines advance?")
+st.sidebar.subheader("Index weights")
+preset = st.sidebar.radio("preset", ["default", "yield only", "equal weights", "custom"], horizontal=True)
+presets = {
+    "default": dict(yld=0.5, twt=0.1, mst=-0.15, erm=-0.05, lodg=-0.2),
+    "yield only": dict(yld=1.0, twt=0.0, mst=0.0, erm=0.0, lodg=0.0),
+    "equal weights": dict(yld=0.2, twt=0.2, mst=-0.2, erm=-0.2, lodg=-0.2),
+}
+base = presets.get(preset, presets["default"])
+w = {}
+labels = {"yld": "yield (predicted)", "twt": "test weight (predicted)", "mst": "moisture (predicted, negative = drier is better)",
+          "erm": "maturity (predicted, negative = earlier is better)", "lodg": "family lodging (observed, negative = less is better)"}
+for k in Z:
+    w[k] = st.sidebar.slider(labels[k], -0.5, 1.0, float(base[k]), 0.05, disabled=(preset != "custom"), key=f"w_{k}")
+frac = st.sidebar.slider("share of candidates to advance", 0.05, 0.5, 0.20, 0.05)
 
-conds = sorted(res["condition"].unique())
-min_n = st.sidebar.slider("minimum n per cell", 1, 20, 5)
+# ---------------- recompute the list under these weights ----------------
+adv = adv.copy()
+adv["index"] = sum(w[k] * Z[k] for k in Z)
+adv = adv.sort_values("index", ascending=False)
+adv["rank"] = np.arange(1, len(adv) + 1)
+k = int(frac * len(adv))
+adv["advance"] = adv["rank"] <= k
+top = adv[adv.advance]
+gain = top.obs_yld_2008.mean() - adv.obs_yld_2008.mean()
+oracle = adv.nlargest(k, "obs_yld_2008").obs_yld_2008.mean() - adv.obs_yld_2008.mean()
 
-st.sidebar.subheader("Decision weights")
-st.sidebar.caption("Weights are a project choice. Move them and watch the shortlist react.")
-weights = {c: st.sidebar.slider(c, 0.0, 1.0, round(1 / len(conds), 2), 0.05) for c in conds}
-penalty = st.sidebar.slider("instability penalty", 0.0, 2.0, 0.5, 0.1)
+st.title("Which 2008 lines should advance?")
+c1, c2, c3, c4 = st.columns(4)
+c1.metric("candidate lines", f"{len(adv):,}")
+c2.metric(f"advanced (top {frac:.0%})", f"{k:,}")
+c3.metric("realised 2008 yield gain", f"{gain:+.2f} bu/ac", help="mean observed 2008 yield of the advanced set minus the mean of all candidates")
+c4.metric("of what perfect foresight would get", f"{100 * gain / oracle:.0f}%", help=f"perfect foresight: {oracle:+.2f} bu/ac")
+if gain < 0:
+    st.warning("These weights advance lines that yielded *below* average in 2008. Maturity and moisture are now weighted as heavily as yield, so the index selects early, dry, low-yielding lines.")
 
-if sum(weights.values()) == 0:
-    st.error("All weights are zero.")
-    st.stop()
-
-ranked = score(res, weights, penalty=penalty, min_n=min_n)
-
-st.title("Environment-aware selection")
-c1, c2, c3 = st.columns(3)
-c1.metric("entities ranked", f"{len(ranked):,}")
-c2.metric("conditions", len(conds))
-top_mean = set(ranked.sort_values("performance", ascending=False).head(10).index)
-c3.metric("top-10 overlap, mean vs score", f"{len(top_mean & set(ranked.head(10).index))}/10")
-
-tab1, tab2, tab3, tab4 = st.tabs(["Shortlist", "Entity profile", "Reversal", "2008 advancement"])
+tab1, tab2, tab3 = st.tabs(["Advancement list", "Family view", "How good is the prediction"])
 
 with tab1:
-    st.subheader("Top 25 by decision score")
-    show = ranked.head(25).copy()
-    show.insert(0, "rank", range(1, len(show) + 1))
-    st.dataframe(show.round(2), use_container_width=True)
-    st.download_button("download shortlist", show.to_csv().encode(), "shortlist.csv")
+    pop = st.selectbox("filter to a family", ["all"] + sorted(adv.POP.unique().tolist()))
+    d = adv if pop == "all" else adv[adv.POP == pop]
+    cols = ["rank", "LINE_ID", "POP", "HG", "pred_yld_aug", "pred_mst", "pred_twt", "pred_erm", "pop_lodging_obs", "index", "advance", "obs_yld_2008"]
+    st.dataframe(d[cols].head(300).round(2), hide_index=True, width="stretch")
+    st.caption("pred_* are model predictions made as of January 2008. obs_yld_2008 is what actually happened, shown only to score ourselves.")
+    st.download_button("download full list", adv[cols].to_csv(index=False).encode(), "advance2008_ranked.csv")
 
 with tab2:
-    ent = st.selectbox("entity", ranked.index.tolist())
-    prof = res[res["entity"] == ent].set_index("condition").reindex(conds)
-    st.subheader(f"{ent}: performance by condition")
-    st.bar_chart(prof["estimate"])
-    st.caption("Bars are condition-centered estimates. Error is se; n per cell below.")
-    st.dataframe(prof[["estimate", "se", "n"]].round(2), use_container_width=True)
+    fam = adv.groupby("POP").agg(lines=("LINE_ID", "size"), advanced=("advance", "sum"), pred_yld=("pred_yld_aug", "mean"),
+                                 obs_yld=("obs_yld_2008", "mean"), lodging=("pop_lodging_obs", "first")).reset_index()
+    fam["share_advanced"] = fam.advanced / fam.lines
+    st.subheader("Families, not lines, carry most of the signal")
+    st.scatter_chart(fam, x="pred_yld", y="obs_yld", size="lines", color="share_advanced")
+    st.caption("each dot is a family: predicted mean vs observed 2008 mean, dot size = number of candidate lines")
+    st.dataframe(fam.sort_values("obs_yld", ascending=False).round(2), hide_index=True, width="stretch")
 
 with tab3:
-    st.subheader("Who the decision score adds and drops")
-    by_mean = ranked.sort_values("performance", ascending=False).head(10).index
-    by_score = ranked.head(10).index
-    a, b = st.columns(2)
-    a.write("**Top 10 by mean performance**")
-    a.write(list(by_mean))
-    b.write("**Top 10 by decision score**")
-    b.write(list(by_score))
-    dropped = [e for e in by_mean if e not in by_score]
-    st.info(f"Dropped by the stability penalty: {dropped or 'none'}")
-
-with tab4:
-    st.subheader("Bayer scenario: which 2008 lines advance")
-    adv_path = "results/advance2008.csv"
-    if Path(adv_path).exists():
-        adv = pd.read_csv(adv_path, dtype={"LINE_ID": str, "POP": str})
-        c1, c2, c3 = st.columns(3)
-        c1.metric("candidate lines", f"{len(adv):,}")
-        c2.metric("flagged to advance (top 20%)", f"{int(adv.advance_top20.sum()):,}")
-        top = adv[adv.advance_top20]
-        c3.metric("realised 2008 yield gain of flagged set", f"{top.obs_yld_2008.mean() - adv.obs_yld_2008.mean():+.2f} bu/ac")
-        pop = st.selectbox("population", ["all"] + sorted(adv.POP.unique().tolist()))
-        d = adv if pop == "all" else adv[adv.POP == pop]
-        cols = ["rank", "LINE_ID", "POP", "HG", "pred_yld_aug", "pred_mst", "pred_twt", "pred_erm", "pop_lodging_obs", "index", "advance_top20", "obs_yld_2008"]
-        st.dataframe(d[cols].head(200).round(2), use_container_width=True, hide_index=True)
-        st.caption("pred_* are model predictions before the 2008 season; obs_yld_2008 is what actually happened, shown only to score ourselves.")
-        st.scatter_chart(d.sample(min(len(d), 3000), random_state=0), x="pred_yld_aug", y="obs_yld_2008", color="advance_top20")
-    else:
-        st.info("Run src/predict_siblings.py to create results/advance2008.csv.")
+    r = np.corrcoef(adv.pred_yld_aug, adv.obs_yld_2008)[0, 1]
+    st.subheader(f"Predicted vs observed 2008 yield, r = {r:.2f}")
+    st.scatter_chart(adv.sample(min(len(adv), 4000), random_state=0), x="pred_yld_aug", y="obs_yld_2008", color="advance")
+    st.caption("real signal, lots of noise. The advanced set (colored) sits visibly higher on average than the rest. "
+               "The ceiling is r ~ 0.68 because each 2008 line mean rests on only ~5 plots.")

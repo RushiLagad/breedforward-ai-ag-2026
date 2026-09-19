@@ -15,6 +15,7 @@ results/
 figures/*.png
 figures/*.pdf
 !figures/.gitkeep
+!figures/fig_*.png
 
 # Python
 __pycache__/
@@ -30,4 +31,4 @@ Thumbs.db
 .vscode/
 .idea/
 
-!figures/fig_*.png
+figures/*_gray.png

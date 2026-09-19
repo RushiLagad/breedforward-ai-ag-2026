@@ -1,20 +1,20 @@
 # Deck outline
 
-Ten slides. Every title is a claim, not a label. Slides 1, 2, 9 and 10 get drafted
-Saturday morning before any result exists. Two speakers, handoff at slide 6.
+Ten slides. Every title is a claim, not a label. All five figures exist in `figures/`; the numbers are
+reproduced. Two speakers, handoff at slide 6. Deadline: confirm with the organizers' schedule.
 
 | # | Working title (rewrite as a claim) | Owner | Ready by |
 |---|---|---|---|
-| 1 | The decision this data exists to support | Story | Sat 11:00 |
-| 2 | Our hypothesis, stated so it could be wrong | Story | Sat 11:00 |
-| 3 | What this data actually is (and two traps in it) | Data | Sat 14:00 |
-| 4 | The answer you get from the obvious metric | Modeler | Sat 17:00 |
-| 5 | The reversal (THE figure) | Viz | Sat 23:00 |
-| 6 | Why it holds: validation that matches the claim | Modeler | Sun 10:00 |
-| 7 | What drives it | Viz | Sun 10:00 |
-| 8 | The Monday morning shortlist | Story | Sun 11:00 |
-| 9 | The tool, 30 seconds live | Viz | Sat 23:00 |
-| 10 | Limits and what two more weeks would buy | Story | Sat 11:00 |
+| 1 | The decision this data exists to support | Story | Sat AM |
+| 2 | Our hypothesis, stated so it could be wrong | Story | Sat AM |
+| 3 | What this data actually is (and two traps in it) | Data | Sat AM |
+| 4 | Genotype alone predicts a new year weakly (r 0.14, +1.7 of +12.7) | Modeler | Sat PM |
+| 5 | The sampling curve: 10% of each family captures most of the gain (THE figure) | Viz | Sat PM |
+| 6 | Why it holds: leave-2008-out, two years, baselines, honest ceiling | Modeler | Sat PM |
+| 7 | Broad-acre, not environment-specific: the G x E test | Viz | Sat PM |
+| 8 | The advancement list and why those weights | Story | Sun AM |
+| 9 | The tool, 30 seconds live | Viz | Sat PM |
+| 10 | Limits and what two more weeks would buy | Story | Sat AM |
 
 ## Speaker notes to write early
 

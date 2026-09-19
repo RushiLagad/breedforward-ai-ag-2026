@@ -7,29 +7,28 @@ Renuka Khanal, Ajaydeep Bedi.
 
 ![BreedForward workflow](deck/workflow.png)
 
-*Bayer scenario: January 2008, plots cut. Predict which of the 15,959 lines about to be planted should advance, from genotypes and 2001 to 2007 testcross data. Validate on the real 2008 season. Data Friday, model Saturday, decision and demo Sunday.*
+*Bayer scenario: January 2008, plots cut. Predict which of the 15,968 lines about to be planted should advance (15,959 have a scorable 2008 yield), from genotypes and 2001 to 2007 testcross data. Validate on the real 2008 season. Data Friday, model Saturday, decision and demo Sunday.*
 
 **Nothing from the hackathon dataset gets committed.** `data/` is gitignored and so are
 `*.csv`, `*.parquet` and `*.xlsx`. The organizers marked last year's materials confidential.
 
-## Setup (do this before Saturday, not on Saturday)
+## Setup
 
 ```bash
-git clone git@github.com:<org>/breedforward-2026.git
-cd breedforward-2026
-python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+git clone https://github.com/RushiLagad/breedforward-ai-ag-2026.git
+cd breedforward-ai-ag-2026
 pip install -r requirements.txt
-python src/rank.py            # smoke test on synthetic data
-python src/figures.py         # writes figures/*.png from demo data
-streamlit run dashboard/app.py
 ```
 
-Everyone pushes one test commit before the event so nobody debugs SSH keys at 9am.
+Then copy the dataset files into `data/` and unzip `ImputedC1Populations.zip` and `ImputedC2Populations.zip`
+there (so `data/ImputedPopulationsC1/` and `data/ImputedPopulationsC2/` exist). Nothing under `data/` or
+`results/` is ever committed.
 
 ## Working rule
 
-Push to `main` often, small commits, no long-lived branches. Branch discipline costs more
-than it saves in a 28-hour sprint. If two people must touch one file, say so out loud first.
+Everyone pushes to `main`, small commits, no long-lived branches. If two people must touch one file, say so
+in the channel first. Any number that goes in the deck is reproduced by a second person from this repo.
+Reproduced on a second machine (Windows, miniforge) on Sep 19: every stage, every number identical.
 
 ## Layout
 
@@ -37,24 +36,21 @@ than it saves in a 28-hour sprint. If two people must touch one file, say so out
 src/audit.py          structure audit for an unknown dataset   <- run this first
 src/build.py          clean build of both groups + environment -> results/pheno_env_ready.pkl
 src/gxe_test.py       between-regime vs split-half correlation (the honest G x E test)
-src/gp_within_pop.py  within-population genomic prediction, CV1  -> results/gp_within_pop.csv
-src/predict2008.py    THE SCENARIO: train 2000-2007, predict 2008  -> results/pred2008.csv
+src/predict2008.py    first pass at the scenario: train 2000-2007, predict 2008 (superseded by predict_multitrait)
 src/predict_multitrait.py  tuned ridge, 2007 + 2008 hold-outs, six traits -> results_summary/stage2_results.csv
 src/predict_siblings.py    half of each 2008 pop phenotyped, predict the rest; breeder's equation; advancement list
 src/predict_two_stage.py   sibling mean + within-population marker model (Mendelian sampling term)
 deck/workflow.png     the team schematic (deck/workflow.dot is the source)
-src/rank.py           shrunken estimates + decision score      -> results/results.csv
-src/figures.py        the deck figures                         -> figures/*.png
-src/style.py          one visual system for every plot
-src/demo.py           synthetic results so everything runs before real data
-dashboard/app.py      Streamlit shell, reads results.csv, never fits a model
-deck/OUTLINE.md       the 10 slides and who owns each
-deck/workflow.html    hypotheses, Mermaid pipeline, demo spec
-data/                 gitignored
+src/weight_sensitivity.py  how the advancement list moves with index weights -> results_summary/stage5_weight_sensitivity.csv
+src/figures_results.py     the five deck figures, from results_summary/ only  -> figures/fig_*.png
+src/style.py               one visual system for every plot
+src/legacy/                pre-scenario scripts (generic ranking, demo data, last year's build); not used
+dashboard/app.py           Streamlit demo, reads results/advance2008.csv, never fits a model
+deck/OUTLINE.md            the 10 slides and who owns each
+deck/workflow.html         hypotheses, Mermaid pipeline, demo spec
+docs/                      challenge brief, decision log, pitch outline
+data/, results/            gitignored (dataset and derived tables)
 ```
-
-`src/example_2025_corn_build.py` is last year's clean-build script, kept as a worked example
-of the merge and QC pattern.
 
 ## Pipeline
 
@@ -62,9 +58,12 @@ of the merge and QC pattern.
 copy the dataset files into data/ and unzip ImputedC1Populations.zip and ImputedC2Populations.zip there
 python src/build.py            # ~2 min, writes results/pheno_env_ready.pkl and results/env_ready.csv
 python src/gxe_test.py         # ~3 min
-python src/gp_within_pop.py    # ~20 min for 50 populations
-python src/predict2008.py      # ~7 min, needs ~4 GB RAM; the scenario result
-python src/figures.py results/results.csv
+python src/predict_multitrait.py   # ~9 min first run (builds the genotype cache), ~2 min after
+python src/predict_siblings.py     # ~1 min, writes results/advance2008.csv
+python src/predict_two_stage.py    # seconds
+python src/sampling_curve.py       # ~1 min
+python src/weight_sensitivity.py   # seconds
+python src/figures_results.py      # the five deck figures
 streamlit run dashboard/app.py
 ```
 
@@ -175,52 +174,14 @@ equal weights are the one choice that breaks it. The weights are the breeder's l
 - Within-population genomic prediction, ridge, CV1: r 0.21 yield, 0.35-0.39 moisture on 24 populations. Literature gets 0.4-0.6 with GBLUP.
 - Samuel's CORN_BREEDING_DATA_GUIDE.md column names do not match the files (YEAR_x, X04_PRCP, clay_0_5cm, no TMAX/TMIN). src/build.py uses the real names.
 
-## Day one: hours 0 to 3
-
-- [ ] Write the organizers' question on the whiteboard, in their words.
-- [ ] Write our hypothesis so that it could be proven wrong.
-- [ ] `python src/audit.py data/<file>.csv --id <ID> --group <GROUP> --condition <COND> --outcome <Y>`
-- [ ] Read every ID as a string. Float coercion invents entities ("1" vs "1.0").
-- [ ] Check IDs are globally unique, not just unique within a group.
-- [ ] Map nesting. A factor fully nested in another kills the comparison that depends on it.
-- [ ] Build the coverage matrix. Cells with n < 5 are noise.
-- [ ] List variables measured at or after the outcome. They are banned from the features.
-- [ ] Cut class thresholds on unique environments, not on plot rows.
-- [ ] Validate every merge with row counts before and after.
-- [ ] Write the traps onto deck slide 3 while they are fresh.
-
-## Validation rules, no exceptions
-
-1. The split matches the claim. New season means leave-one-year-out. New entity means a
-   group split on entity.
-2. Every metric names its split in the same sentence.
-3. A baseline sits next to every model: grand mean, condition mean, one classical method.
-
-Last year's lesson, measured on the 2025 corn data: R-squared 0.73 on a random split,
-mean -0.27 under leave-one-year-out. Same model, same features.
-
-## Gates
-
-| Clock | Gate |
-|---|---|
-| Sat 10:00 | Hypothesis everyone can recite |
-| Sat 13:00 | Clean table plus written traps list |
-| Sat 16:00 | One number that supports or kills the hypothesis. Keep, adjust, or switch |
-| Sat 23:00 | Scope freeze. Dashboard runs end to end. No new analysis after this |
-| Sun 11:00 | Full deck, no placeholders |
-| Sun 12:50 | Submitted |
-
-Standing check-ins at 13:00, 16:00, 23:00, 09:00. Five minutes, standing, what exists and
-what is blocked.
-
 ## Lanes
 
-| Person | Lane | Never |
-|---|---|---|
-| | Data engineer: clean build, IDs, QC | slides |
-| Rishi | Modeler: baselines, model, validation | chart styling |
-| | Visualization: dashboard and every figure, from hour 0 | model tuning |
-| | Story: hypothesis wording, deck, rehearsal clock | debugging after hour 12 |
+| Person | Lane |
+|---|---|
+| Sambhavi Patel | Data: build, QC, traps, reproduction |
+| Rushikesh Lagad | Modeling: prediction, validation, sampling curve, index |
+| Renuka Khanal | Visualization: figures, dashboard, demo |
+| Ajaydeep Bedi | Story: deck, narrative, rehearsal clock |
 
 Any result that goes in the deck is read by a second person first.
 

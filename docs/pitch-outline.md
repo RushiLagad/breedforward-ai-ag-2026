@@ -1,23 +1,19 @@
 # Pitch outline
 
-Build the story while building the solution. Replace each placeholder with one clear claim and one supporting visual.
+See `deck/OUTLINE.md` for the ten slides, owners and figures. The arc in one paragraph:
 
-1. **The field problem** — who faces it, when, and why it matters.
-2. **The decision gap** — what existing workflow misses or delays.
-3. **Our idea** — the solution in one sentence.
-4. **How it works** — data-to-decision flow without unnecessary technical detail.
-5. **Evidence** — baseline comparison, validation design, and the most decision-relevant metric.
-6. **Agricultural value** — expected time, cost, risk, welfare, yield, or sustainability impact.
-7. **Responsible use** — uncertainty, limitations, and human oversight.
-8. **Demo** — one reliable path through the product or analysis.
-9. **Next step** — what would be tested with more time or real deployment access.
+It is January 2008 and the plots are cut. The obvious idea is to predict every line from its genotype
+and skip the field. We tried it, scored against the real 2008 season, and it works only weakly
+(r = 0.14, +1.7 bu/ac of +12.7 possible). The thing that works is the family: phenotype a tenth of
+each family and predict the rest from the family mean, and you get +3.9 bu/ac for a tenth of the plots.
+Markers earn their keep on moisture and test weight, and on families with no plots at all. So the
+recommendation is a plot-allocation rule, not a model: never drop a family, sample every one thinly,
+predict broad-acre performance, and advance on a five-trait index whose weights the breeder can move.
 
 ## Final checks
 
 - [ ] The problem is understandable in 30 seconds.
-- [ ] Every claim has evidence or is labeled as a hypothesis.
-- [ ] The validation split matches how the tool would be used.
-- [ ] Biological and operational constraints are visible.
-- [ ] Slides use readable labels and units.
-- [ ] The demo has a fallback recording or screenshots.
-- [ ] The final presentation fits the time limit with margin.
+- [ ] Every number on a slide is in `results_summary/` and was reproduced on a second machine.
+- [ ] The validation split matches how the tool would be used (leave-2008-out, half-family).
+- [ ] The demo has a recorded fallback.
+- [ ] The talk fits the time limit with margin.
