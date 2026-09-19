@@ -6,7 +6,7 @@ Complete this together during the first check-in. Keep private contact details o
 
 | Member | Preferred contact | Strengths | Preferred role | Availability |
 | --- | --- | --- | --- | --- |
-| Ajaydeep Bedi | TBD | TBD | TBD | TBD |
+| Ajaydeep Bedi | TBD | Python, Git, Vibe Coding, Food Science | Coding | TBD |
 | Renuka Khanal | TBD | TBD | TBD | TBD |
 | Sambhavi Patel | TBD | TBD | TBD | TBD |
 | Rushikesh Lagad | TBD | Bioinformatics, genomics, ML | TBD | TBD |
