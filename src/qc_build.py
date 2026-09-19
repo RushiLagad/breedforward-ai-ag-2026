@@ -20,6 +20,7 @@ COLS = [
     "LINE",
     "GERMPLASM_ID_TESTER",
     "CLUSTER",
+    "YLD_BE",
 ]
 
 
@@ -82,6 +83,25 @@ def main() -> None:
     n_2008 = int((ready.YEAR == 2008).sum())
     lines_2008 = ready.loc[ready.YEAR == 2008, "LINE_ID"].nunique()
     print(f"  2008 already in the table: {n_2008:,} plots, {lines_2008:,} lines — hold this year out")
+
+    y08 = ph[pd.to_numeric(ph["YEAR_x"]) == 2008].copy()
+    y08["YLD"] = pd.to_numeric(y08["YLD_BE"], errors="coerce")
+    y08["has_env"] = [
+        (year, loc) in env_keys
+        for year, loc in zip(pd.to_numeric(y08["YEAR_x"]), y08["LOC"].astype(str).str.strip())
+    ]
+    candidate = set(y08["LINE_UNIQUE_ID"])
+    no_yield = set(y08.groupby("LINE_UNIQUE_ID")["YLD"].apply(lambda s: s.notna().sum()).loc[lambda s: s == 0].index)
+    yield_rows = y08[y08["YLD"].notna()]
+    env_on_yield = yield_rows.groupby("LINE_UNIQUE_ID")["has_env"].sum()
+    weather_only = set(env_on_yield[env_on_yield == 0].index)
+    evaluation = candidate - no_yield - weather_only
+    print("\n2008 CANDIDATE vs EVALUATION")
+    print(f"  candidate (every 2008 line, all get a prediction): {len(candidate):,}")
+    print(f"  no recorded yield: {len(no_yield)}  {sorted(no_yield)}")
+    print(f"  yield only at sites with no weather: {len(weather_only)}  {sorted(weather_only)}")
+    print(f"  evaluation (can score against 2008 yield): {len(evaluation):,}")
+    print("  predict all candidates; score only the evaluation set")
 
 
 if __name__ == "__main__":
