@@ -4,7 +4,7 @@
 
 <p align="center">
   AI in AG Hackathon with Bayer, University of Arkansas, September 18 to 20, 2026<br>
-  Sambhavi Patel, Rushikesh Lagad, Renuka Khanal, Ajaydeep Bedi
+  Sambhavi Patel, Rushikesh Lagad, Renuka Khanal
 </p>
 
 ---
