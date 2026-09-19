@@ -7,7 +7,7 @@ Saturday morning before any result exists. Two speakers, handoff at slide 6.
 |---|---|---|---|
 | 1 | The decision this data exists to support | Story | Sat 11:00 |
 | 2 | Our hypothesis, stated so it could be wrong | Story | Sat 11:00 |
-| 3 | What this data actually is (and two traps in it) | Data | Sat 14:00 |
+| 3 | LINE is not a line, and 52k C2 plots vanish on the env join | Data | Sat 14:00 |
 | 4 | The answer you get from the obvious metric | Modeler | Sat 17:00 |
 | 5 | The reversal (THE figure) | Viz | Sat 23:00 |
 | 6 | Why it holds: validation that matches the claim | Modeler | Sun 10:00 |
@@ -15,6 +15,8 @@ Saturday morning before any result exists. Two speakers, handoff at slide 6.
 | 8 | The Monday morning shortlist | Story | Sun 11:00 |
 | 9 | The tool, 30 seconds live | Viz | Sat 23:00 |
 | 10 | Limits and what two more weeks would buy | Story | Sat 11:00 |
+
+Slide 3 draft, with confirmed counts: [slide-03-traps.md](slide-03-traps.md). Re-check with `python src/qc_build.py`.
 
 ## Speaker notes to write early
 

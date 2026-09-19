@@ -9,9 +9,11 @@ data/
 !data/.gitkeep
 # small result summaries are versioned; raw results/ are not
 !results_summary/*.csv
+Hackathon2026/
 
 # Results and figures are regenerated, not versioned
 results/
+outputs/
 figures/*.png
 figures/*.pdf
 !figures/.gitkeep
@@ -23,6 +25,12 @@ __pycache__/
 venv/
 .venv/
 .env
+.env.*
+!.env.example
+*.pem
+*.key
+*.joblib
+*.pkl
 
 # OS / editors
 .DS_Store
