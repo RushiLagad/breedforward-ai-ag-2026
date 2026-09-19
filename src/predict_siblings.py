@@ -57,18 +57,39 @@ for r in [0.14, 0.25, 0.35, 0.5]: print(f"  r={r:.2f}: {i20*r*sd_true:+.2f} bu/a
 plots = int(y[y.YEAR == 2008].shape[0]); lines08 = y[y.YEAR == 2008].LINE_ID.nunique()
 print(f"2008 as tested: {lines08:,} lines x {plots/lines08:.1f} plots = {plots:,} plots. Advancing only the predicted top 20% saves ~{0.8*plots:,.0f} plots.")
 
-# --- ranked advancement list on five criteria (predicted where predictable, observed sibling penalty for lodging) ---
+# --- ranked advancement list on five criteria ---
+# The predictor is the one the schemes above recommend: the mean of the phenotyped siblings, plus a
+# within-family marker model for the Mendelian-sampling part (fit on families with >= 30 phenotyped
+# siblings; see src/predict_two_stage.py). The global marker model (scheme B) is used only for a family
+# with no phenotyped sibling. Lodging is not predictable here and enters as the observed family mean.
+# pred_yld_aug (scheme B) and pred_yld_new (scheme A) are kept for reference.
+from sklearn.linear_model import Ridge
+def two_stage(col):
+    mk = fit_predict(pd.concat([line[line.YEAR < 2008], known]), unknown, col)   # fallback: global markers
+    out = pd.Series(mk, index=unknown.index)
+    for pop, un in unknown.groupby("POP"):
+        kn = known[(known.POP == pop) & known[col].notna()]
+        if len(kn) == 0: continue
+        mu = kn[col].mean(); dev = np.zeros(len(un))
+        if len(kn) >= 30:
+            X = np.asarray(G[kn.gi.values], dtype=np.float64); keep = X.std(0) > 0
+            m = Ridge(alpha=len(kn) * 2.0).fit(X[:, keep], kn[col].values - mu)
+            dev = m.predict(np.asarray(G[un.gi.values], dtype=np.float64)[:, keep])
+        out.loc[un.index] = mu + dev
+    return out.values
 adv = unknown[["LINE_ID", "POP", "HG", "P1", "P2", "pred_yld_aug", "pred_yld_new"]].copy()
-for t in ["MST", "TWT", "ERM"]:
-    adv["pred_" + t.lower()] = fit_predict(pd.concat([line[line.YEAR < 2008], known]), unknown, t + "_c")
+adv["sib_n"] = adv.POP.map(known.groupby("POP").size()).fillna(0).astype(int)
+for t in ["YLD", "MST", "TWT", "ERM"]:
+    adv["pred_" + t.lower()] = two_stage(t + "_c")
+print(f"\nadvancement predictor: sibling mean + within-family markers; global-marker fallback for {int((adv.sib_n == 0).sum())} lines in {adv[adv.sib_n == 0].POP.nunique()} families with no phenotyped sibling")
 lodg = known.assign(lodg=known.RTLP_c.fillna(0) + known.STLP_c.fillna(0)).groupby("POP").lodg.mean()
 adv["pop_lodging_obs"] = adv.POP.map(lodg).fillna(0)
 z = lambda s: (s - s.mean()) / s.std()
-W = {"pred_yld_aug": 0.5, "pred_twt": 0.1, "pred_mst": -0.15, "pred_erm": -0.05, "pop_lodging_obs": -0.2}
+W = {"pred_yld": 0.5, "pred_twt": 0.1, "pred_mst": -0.15, "pred_erm": -0.05, "pop_lodging_obs": -0.2}
 adv["index"] = sum(w * z(adv[c]) for c, w in W.items())
 adv = adv.sort_values("index", ascending=False); adv["rank"] = np.arange(1, len(adv) + 1); adv["advance_top20"] = adv["rank"] <= int(0.2 * len(adv))
 adv["obs_yld_2008"] = unknown.set_index("LINE_ID").loc[adv.LINE_ID, "YLD_c"].values
 adv.round(3).to_csv("results/advance2008.csv", index=False)
-top = adv[adv.advance_top20]; print(f"\nindex top-20% realised yield gain: {top.obs_yld_2008.mean()-adv.obs_yld_2008.mean():+.2f} bu/ac | yield-only top-20%: {adv.nlargest(len(top),'pred_yld_aug').obs_yld_2008.mean()-adv.obs_yld_2008.mean():+.2f}")
+top = adv[adv.advance_top20]; print(f"\nindex top-20% realised yield gain: {top.obs_yld_2008.mean()-adv.obs_yld_2008.mean():+.2f} bu/ac | yield-only top-20%: {adv.nlargest(len(top),'pred_yld').obs_yld_2008.mean()-adv.obs_yld_2008.mean():+.2f} | r(pred_yld, obs) = {np.corrcoef(adv.pred_yld, adv.obs_yld_2008)[0,1]:.3f}")
 print(f"advance list: {len(adv)} lines, {top.shape[0]} flagged, HG split {top.HG.value_counts().to_dict()}, pops represented {top.POP.nunique()}")
 print(f"done {time.time()-t0:.0f}s")

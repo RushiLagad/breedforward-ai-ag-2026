@@ -8,5 +8,6 @@
 | Sep 18 | Ridge on the 2,911-SNP panel, lambda tuned on 2007 | GBLUP with G matrix, BayesB | equivalent for this marker count; ridge fits in a minute | Rishi |
 | Sep 18 | Adjust yield within environment x tester before modeling | raw yield, environment only | testers differ by group; 95 testers, 3.9% missing | Rishi |
 | Sep 19 | Recommend sampling every family, not growing every line | genotype-only prediction | 10% of each family gives +3.9 bu/ac vs +1.7 for genotype only; curve flat past 20% | Rishi |
-| Sep 19 | Index weights 0.5 / 0.1 / -0.15 / -0.05 / -0.2 | yield only; equal weights | equal weights give negative realised gain; default set 85% stable over 500 random weightings | Rishi |
+| Sep 19 | Index weights 0.5 / 0.1 / -0.15 / -0.05 / -0.2 | yield only; equal weights | equal weights keep only a third of the realised gain; default set 87% stable over 500 random weightings | Rishi |
 | Sep 19 | Candidate set 15,968, evaluation set 15,959 | one number | 9 lines have no scorable yield | Sambhavi |
+| Sep 19 | Advancement list built on family mean plus within-family markers, global markers only as fallback | markers with siblings pooled (the first version) | the first version used the second-best predictor (r 0.24, +2.6 bu/ac); the recommended one gives r 0.35, +3.9, and keeps 112 families in the flagged set instead of 31 with the bare family mean | Rishi |

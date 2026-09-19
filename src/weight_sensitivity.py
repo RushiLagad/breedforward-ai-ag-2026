@@ -4,7 +4,7 @@ in realised 2008 yield, moisture, test weight and observed family lodging?"""
 import numpy as np, pandas as pd
 adv = pd.read_csv("results/advance2008.csv", dtype={"LINE_ID": str, "POP": str})
 z = lambda s: (s - s.mean()) / s.std()
-cols = {"yld": "pred_yld_aug", "twt": "pred_twt", "mst": "pred_mst", "erm": "pred_erm", "lodg": "pop_lodging_obs"}
+cols = {"yld": "pred_yld", "twt": "pred_twt", "mst": "pred_mst", "erm": "pred_erm", "lodg": "pop_lodging_obs"}
 Z = {k: z(adv[c]) for k, c in cols.items()}
 k = int(0.2 * len(adv))
 

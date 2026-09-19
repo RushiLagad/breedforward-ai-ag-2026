@@ -87,8 +87,11 @@ Breeder's equation, top 20% advanced (i = 1.40), additive sd about 6.3 bu/ac: r 
 gives +3.1, r 0.50 gives +4.4 bu/ac per cycle. 2008 as run was 77,353 plots; sampling half saves about
 39,000 plots and keeps about 70% of the gain.
 
-`results/advance2008.csv` (not committed): 8,014 lines, 1,602 flagged under the default index. Realised
-2008 yield gain of the flagged set +2.6 bu/ac.
+`results/advance2008.csv` (not committed): 8,014 lines, 1,602 flagged under the default index. The predictor
+for every trait is the one this stage recommends: mean of the phenotyped siblings plus the within-family
+marker model (r 0.35 for yield on the held-out half), with the global marker model as the fallback for a
+family with no phenotyped sibling (none in this split). Lines from 112 families are flagged. Realised 2008
+yield gain of the flagged set +3.9 bu/ac; yield-only ranking on the same predictor +4.3.
 
 ## Stage 4: the sampling curve (src/sampling_curve.py, figures/fig_sampling_curve.png)
 
@@ -114,18 +117,19 @@ outcomes of the flagged top 20% of the 8,014 held-out lines.
 
 | weighting | yield gain bu/ac | moisture (z) | family lodging (z) | overlap with default set |
 |---|---|---|---|---|
-| yield only | +2.96 | +0.24 (wetter) | -0.69 | 69% |
-| default | +2.64 | -0.02 | -1.75 | 100% |
-| yield-heavy | +3.02 | +0.14 | -1.17 | 80% |
-| moisture-heavy (-0.35) | +1.81 | -0.24 | -1.50 | 78% |
-| lodging-heavy (-0.40) | +2.92 | 0.00 | -2.21 | 88% |
-| equal weights | -0.39 | -0.39 | -1.41 | 45% |
+| yield only | +4.33 | +0.23 (wetter) | -0.81 | 74% |
+| default | +3.94 | -0.10 | -1.60 | 100% |
+| yield-heavy | +4.31 | +0.11 | -1.27 | 85% |
+| moisture-heavy (-0.35) | +3.14 | -0.46 | -1.31 | 82% |
+| lodging-heavy (-0.40) | +3.92 | -0.06 | -2.06 | 90% |
+| no lodging term | +3.64 | -0.20 | -0.59 | 86% |
+| equal weights | +1.37 | -0.62 | -1.38 | 58% |
 
-500 random weightings within plausible ranges: overlap with the default set median 85% (5th to 95th
-percentile 68 to 94%), realised yield gain median +2.62 bu/ac (+1.47 to +3.20). The default trades about
-0.3 bu/ac of yield for drier grain and much lower lodging risk. Equal weights are the one choice that
-breaks it: maturity and moisture then weigh as much as yield and the index selects early, dry, low-yielding
-lines. The weights are the breeder's lever and the demo exposes them.
+500 random weightings within plausible ranges: overlap with the default set median 87% (5th to 95th
+percentile 75 to 94%), realised yield gain median +3.81 bu/ac (+2.81 to +4.32). The default trades about
+0.4 bu/ac of yield for drier grain and half the lodging exposure. Equal weights are the one choice that
+breaks it: maturity and moisture then weigh as much as yield, the index favours the earliest and driest
+lines, and two thirds of the gain is gone. The weights are the breeder's lever and the demo exposes them.
 
 ## Limits
 

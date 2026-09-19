@@ -24,7 +24,7 @@ def load() -> pd.DataFrame:
 
 adv = load()
 z = lambda s: (s - s.mean()) / s.std()
-Z = {"yld": z(adv.pred_yld_aug), "twt": z(adv.pred_twt), "mst": z(adv.pred_mst), "erm": z(adv.pred_erm), "lodg": z(adv.pop_lodging_obs)}
+Z = {"yld": z(adv.pred_yld), "twt": z(adv.pred_twt), "mst": z(adv.pred_mst), "erm": z(adv.pred_erm), "lodg": z(adv.pop_lodging_obs)}
 
 # ---------------- sidebar: the breeder's lever ----------------
 st.sidebar.title("BreedForward")
@@ -41,6 +41,8 @@ w = {}
 labels = {"yld": "yield (predicted)", "twt": "test weight (predicted)", "mst": "moisture (predicted, negative = drier is better)",
           "erm": "maturity (predicted, negative = earlier is better)", "lodg": "family lodging (observed, negative = less is better)"}
 for k in Z:
+    if preset != "custom":
+        st.session_state[f"w_{k}"] = float(base[k])   # keyed sliders keep state; a preset must overwrite it
     w[k] = st.sidebar.slider(labels[k], -0.5, 1.0, float(base[k]), 0.05, disabled=(preset != "custom"), key=f"w_{k}")
 frac = st.sidebar.slider("share of candidates to advance", 0.05, 0.5, 0.20, 0.05)
 
@@ -61,21 +63,23 @@ c1.metric("candidate lines", f"{len(adv):,}")
 c2.metric(f"advanced (top {frac:.0%})", f"{k:,}")
 c3.metric("realised 2008 yield gain", f"{gain:+.2f} bu/ac", help="mean observed 2008 yield of the advanced set minus the mean of all candidates")
 c4.metric("of what perfect foresight would get", f"{100 * gain / oracle:.0f}%", help=f"perfect foresight: {oracle:+.2f} bu/ac")
-if gain < 0:
-    st.warning("These weights advance lines that yielded *below* average in 2008. Maturity and moisture are now weighted as heavily as yield, so the index selects early, dry, low-yielding lines.")
+ref_idx = sum(presets["default"][k] * Z[k] for k in Z); ref_k = int(0.2 * len(adv))
+ref_gain = adv.loc[ref_idx.nlargest(ref_k).index, "obs_yld_2008"].mean() - adv.obs_yld_2008.mean()
+if gain < 0.6 * ref_gain:
+    st.warning(f"These weights give up {100 * (1 - gain / ref_gain):.0f}% of the gain the default index realises. Maturity and moisture now weigh as much as yield, so the index favours early, dry lines over high-yielding ones.")
 
 tab1, tab2, tab3 = st.tabs(["Advancement list", "Family view", "How good is the prediction"])
 
 with tab1:
     pop = st.selectbox("filter to a family", ["all"] + sorted(adv.POP.unique().tolist()))
     d = adv if pop == "all" else adv[adv.POP == pop]
-    cols = ["rank", "LINE_ID", "POP", "HG", "pred_yld_aug", "pred_mst", "pred_twt", "pred_erm", "pop_lodging_obs", "index", "advance", "obs_yld_2008"]
+    cols = ["rank", "LINE_ID", "POP", "HG", "pred_yld", "pred_mst", "pred_twt", "pred_erm", "pop_lodging_obs", "index", "advance", "obs_yld_2008"]
     st.dataframe(d[cols].head(300).round(2), hide_index=True, width="stretch")
     st.caption("pred_* are model predictions made as of January 2008. obs_yld_2008 is what actually happened, shown only to score ourselves.")
     st.download_button("download full list", adv[cols].to_csv(index=False).encode(), "advance2008_ranked.csv")
 
 with tab2:
-    fam = adv.groupby("POP").agg(lines=("LINE_ID", "size"), advanced=("advance", "sum"), pred_yld=("pred_yld_aug", "mean"),
+    fam = adv.groupby("POP").agg(lines=("LINE_ID", "size"), advanced=("advance", "sum"), pred_yld=("pred_yld", "mean"),
                                  obs_yld=("obs_yld_2008", "mean"), lodging=("pop_lodging_obs", "first")).reset_index()
     fam["share_advanced"] = fam.advanced / fam.lines
     st.subheader("Families, not lines, carry most of the signal")
@@ -84,8 +88,8 @@ with tab2:
     st.dataframe(fam.sort_values("obs_yld", ascending=False).round(2), hide_index=True, width="stretch")
 
 with tab3:
-    r = np.corrcoef(adv.pred_yld_aug, adv.obs_yld_2008)[0, 1]
+    r = np.corrcoef(adv.pred_yld, adv.obs_yld_2008)[0, 1]
     st.subheader(f"Predicted vs observed 2008 yield, r = {r:.2f}")
-    st.scatter_chart(adv.sample(min(len(adv), 4000), random_state=0), x="pred_yld_aug", y="obs_yld_2008", color="advance")
-    st.caption("real signal, lots of noise. The advanced set (colored) sits visibly higher on average than the rest. "
+    st.scatter_chart(adv.sample(min(len(adv), 4000), random_state=0), x="pred_yld", y="obs_yld_2008", color="advance")
+    st.caption("family mean plus within-family markers, made with January 2008 information. Real signal, lots of noise. The advanced set (colored) sits visibly higher on average than the rest. "
                "The ceiling is r ~ 0.68 because each 2008 line mean rests on only ~5 plots.")
