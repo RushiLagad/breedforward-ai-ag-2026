@@ -75,3 +75,26 @@ ax.set_xlim(0, 0.4); ax.set_ylim(0, 0.2)
 title(ax, "New-year accuracy tracks pedigree connection, not the model", "same ridge model, same tuning, two hold-out years")
 save(fig, "fig_year_connectedness"); plt.close(fig)
 print("wrote figures/fig_information_vs_gain.png, fig_accuracy_by_trait.png, fig_plots_vs_gain.png, fig_year_connectedness.png")
+
+# ---------- Figure 5: the sampling curve (real, measured) ----------
+S4 = pd.read_csv("results_summary/stage4_sampling_curve.csv")
+yl = S4[S4.trait == "YLD"]
+g0 = S3[S3.trait == "YLD"].iloc[0]
+fig, ax = plt.subplots(figsize=(9.5, 5.5))
+for scheme, lab, c in (("sib", "family mean only", PALETTE[0]), ("two", "family mean + markers", PALETTE[2])):
+    d = yl[yl.scheme == scheme].sort_values("frac")
+    ax.plot(d.plots_used / 1000, d.gain, marker="o", ms=7, lw=2, color=c, label=lab)
+ax.scatter([0], [g0.gain_newyear], s=120, color=PALETTE[5], zorder=4, label="genotype only, no plots")
+ax.axhline(yl.gain_max.mean(), color="#555555", lw=1, ls="--"); ax.text(58, yl.gain_max.mean() + 0.25, "perfect foresight", ha="right", fontsize=11, color="#555555")
+ax.axvline(77.353, color="#999999", lw=1, ls=":"); ax.text(76, 0.4, "full 2008 trial\n77k plots", ha="right", fontsize=10, color="#555555")
+d10 = yl[(yl.scheme == "sib") & (yl.frac == 0.10)].iloc[0]
+ax.annotate(f"10% of each family\n{d10.plots_used/1000:.1f}k plots → +{d10.gain:.1f} bu/ac", (d10.plots_used / 1000, d10.gain), xytext=(14, -46), textcoords="offset points", fontsize=11,
+            arrowprops=dict(arrowstyle="-", color="#555555", lw=0.8))
+for frac in (0.25, 0.5, 0.75):
+    pass
+ax.set_xlabel("field plots spent on the 2008 candidates (thousands)"); ax.set_ylabel("gain, top 20% advanced (bu/ac)")
+ax.set_xlim(-2, 80); ax.set_ylim(0, yl.gain_max.mean() + 2)
+ax.legend(loc="center right")
+title(ax, "Phenotyping 10% of each family captures most of the achievable gain", "2008 candidates, family sampled at random, rest predicted; mean of 3 draws")
+save(fig, "fig_sampling_curve"); plt.close(fig)
+print("wrote figures/fig_sampling_curve.png")

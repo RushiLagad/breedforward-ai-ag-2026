@@ -128,6 +128,25 @@ r=0.50 -> +4.4 bu/ac. 2008 as run = 77,353 plots; sampling half saves ~39,000 pl
 `results/advance2008.csv` (not committed): 8,014 lines, 1,602 flagged, index = 0.5 yield + 0.1 TWT
 - 0.15 MST - 0.05 ERM - 0.2 observed family lodging. Realised 2008 yield gain of the flagged set +2.6 bu/ac.
 
+## Stage 4: the sampling curve (src/sampling_curve.py, figures/fig_sampling_curve.png)
+
+Phenotype a random fraction f of every 2008 family, predict the rest from the family mean (with or
+without within-family markers), score against real 2008 yield. Mean of 3 draws, top-20% advancement:
+
+| share of each family phenotyped | plots | r (family mean) | gain bu/ac |
+|---|---|---|---|
+| 0% (genotype only) | 0 | 0.13 | +1.7 |
+| 10% | 7.7k | 0.30 | +3.9 |
+| 20% | 15k | 0.33 | +4.1 |
+| 50% | 38k | 0.35 | +4.6 |
+| 75% | 57k | 0.37 | +4.8 |
+| perfect foresight | | | +12.7 |
+
+The curve saturates almost immediately: 10% of each family recovers about 80% of what 75% recovers,
+at one seventh of the plots. Markers on top of the family mean add r 0.37 -> 0.40 only at high sampling.
+This is the answer to the scenario's resource question: with a plot cut, sample every family thinly,
+never drop families, and use markers for the moisture and test-weight calls.
+
 ## What we already know (Sep 18 runs)
 
 - 1,019,864 plots, 154,551 lines, 998 populations, 1,185 environments after the merge. 52k C2 rows have no environment row and drop.
