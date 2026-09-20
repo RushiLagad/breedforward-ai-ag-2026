@@ -12,7 +12,7 @@
 ## The problem
 
 January 2008 at a maize breeding program. The field budget has been cut and there are not enough plots to
-grow every candidate. 15,968 new inbred lines from 998 biparental families are genotyped and ready to be
+grow every candidate. 15,968 new inbred lines from 157 biparental families are genotyped and ready to be
 crossed to testers and planted. Behind them sit seven years of testcross data (2001 to 2007, about a million
 plots across 1,185 year by location environments) and one shared 2,911-SNP panel.
 
