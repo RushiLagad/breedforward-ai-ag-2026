@@ -18,7 +18,7 @@ reproduced. Two speakers, handoff at slide 6. Deadline: confirm with the organiz
 
 ## Speaker notes to write early
 
-- One sentence stating the hypothesis, memorized by all four of us.
+- One sentence stating the hypothesis, memorized by all three of us.
 - One sentence for slide 6 that gives the honest number and its split in the same breath.
 - One sentence on the timeline: January decides the plot plan; after harvest, the untested siblings are ranked. Never say the sibling numbers are a January prediction.
 - One sentence on the yield trade-off: sibling mean wins yield alone by 0.02 bu/ac; two-stage keeps 115 families in the flagged set instead of 52.

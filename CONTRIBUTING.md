@@ -1,6 +1,6 @@
 # Contributing
 
-Four people, one weekend. Everyone is a collaborator with push access.
+Three people, one weekend. Everyone is a collaborator with push access.
 
 - Work on `main`. Small commits, pushed often. No long-lived branches.
 - Say in the channel before editing a file someone else is in.

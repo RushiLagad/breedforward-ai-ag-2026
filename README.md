@@ -134,7 +134,6 @@ data/, results/      gitignored
 | Sambhavi Patel | Data: build, QC, traps, reproduction |
 | Rushikesh Lagad | Modeling: prediction, validation, sampling curve, index |
 | Renuka Khanal | Visualization: figures, dashboard, demo |
-| Ajaydeep Bedi | Story: deck, narrative, rehearsal clock |
 
 Everyone pushes to `main`, small commits, no long-lived branches. Any number that goes in the deck is
 reproduced by a second person from this repo. Decisions and their reasons are in `docs/decision-log.md`.
